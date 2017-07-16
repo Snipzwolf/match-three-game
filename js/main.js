@@ -11,11 +11,44 @@ $(document).ready(function(){
     m: 5
   };
 
-  function preload() {
-    game.load.atlasJSONHash('gems', 'images/gems.png', 'images/gems-hash.json');
-  }
+  var gem = function(left, right, up, down){
+    this.left = left;
+    this.right = right;
+    this.up = up;
+    this.down = down;
 
-  function create() {
+    this.gemType = game.rnd.integerInRange(0, gem_prefixs.length-1);
+    var name = gem_prefixs[ gemIdx ] + '_gem_1',
+    var sprite = game.add.sprite(xPos, yPos, 'gems', gemName);
+
+    this.isMatch = function(gem){
+      return this.gemType === gem.gemType;
+    };
+
+    this.hasMatch = function(direction){
+      if(typeof direction !== 'undefined'){
+        return this.isMatch(this[direction]) ? (this[direction].hasMatch(direction) + 1) : 0;
+      }else{
+        var matches = 0;
+        for(var next in ['up', 'down', 'left', 'right']){
+          if(this.isMatch(this[next])){
+            var currMatches = this[next].hasMatch(next);
+            if(currMatches > 3){
+              matches += currMatches;
+            }
+          }
+        }
+
+        return matches;
+      }
+    }
+  };
+
+  var preload = function(){
+    game.load.atlasJSONHash('gems', 'images/gems.png', 'images/gems-hash.json');
+  };
+
+  var create = function(){
     var x = 1, y;
     do{
       y = 1;
@@ -24,6 +57,8 @@ $(document).ready(function(){
             yPos = (y * gem_size.h) - gem_size.h,
             gemName = gem_prefixs[ game.rnd.integerInRange(0, gem_prefixs.length-1) ] + '_gem_1',
             gemSprite = game.add.sprite(xPos, yPos, 'gems', gemName);
+
+          //TODO use gem class
 
           console.log({
             x: x,
@@ -35,11 +70,11 @@ $(document).ready(function(){
           });
       }while(y++ < grid[1]);
     }while(x++ < grid[0]);
-  }
+  };
 
-  function update() {
+  var update = function(){
 
-  }
+  };
 
   var game = new Phaser.Game(grid[0] * gem_size.w, grid[1] * gem_size.h, Phaser.AUTO, 'game-canvas', { preload: preload, create: create, update: update, enableDebug: false});
 });

@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-docker stop {nginx-match-three-js,sass-match-three-js}
-(docker rm {nginx-match-three-js,sass-match-three-js} || true)
+docker stop {nginx-match-three-js,sass-match-three-js,webpack-match-three-js}
+(docker rm {nginx-match-three-js,sass-match-three-js,webpack-match-three-js} || true)

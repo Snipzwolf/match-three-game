@@ -2,7 +2,11 @@
 
 docker run -d --rm=true --name nginx-match-three-js -p "127.0.0.1:8080:80" -v `pwd`:/usr/share/nginx/html:ro nginx
 docker run -d --rm=true --name sass-match-three-js -v `pwd`:/app:rw myparkfolio/sass-compass compass watch
+docker run -d --rm=true --name webpack-match-three-js -v `pwd`:/app jmfirth/webpack webpack -d --watch
+
 
 tmux new-session -s "match-three-js" -d 'docker logs -f --details nginx-match-three-js'
+tmux select-layout main-horizontal
+tmux split-window -v 'docker logs -f --details webpack-match-three-js'
 tmux split-window -h 'docker logs -f --details sass-match-three-js'
 tmux -2 attach-session -d

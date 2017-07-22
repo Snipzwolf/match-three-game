@@ -1,21 +1,17 @@
-import gem from './gem.jsx';
+import Gem from './gem.jsx';
 
 class Game {
+  get phaser(){ return this.game; }
 
   constructor(){
-    this.grid = [15, 9];
-
-    this.gem_prefixs = [
-      'yellow', 'blue', 'green', 'red', 'purple', 'pink'
-    ];
-
-    this.gem_size = {
-      w: 55,
-      h: 82,
-      m: 5
-    };
-
-    this.game = new Phaser.Game(this.grid[0] * this.gem_size.w, this.grid[1] * this.gem_size.h, Phaser.AUTO, 'game-canvas', { preload: this.preload, create: this.create, update: this.update, enableDebug: false});
+    this.grid_size = [15, 9];
+    this.grid = [];
+    this.game = new Phaser.Game(this.grid_size[0] * Gem.width, this.grid_size[1] * Gem.height, Phaser.AUTO, 'game-canvas', {
+      preload: () => this.preload(),
+      create: () => this.create(),
+      update: () => this.update(),
+      enableDebug: false
+    });
   }
 
   preload(){
@@ -27,23 +23,11 @@ class Game {
     do{
       y = 1;
       do{
-        var xPos = (x * gem_size.w) - gem_size.w,
-            yPos = (y * gem_size.h) - gem_size.h,
-            gemName = gem_prefixs[ game.rnd.integerInRange(0, gem_prefixs.length-1) ] + '_gem_1',
-            gemSprite = game.add.sprite(xPos, yPos, 'gems', gemName);
-
-          //TODO use gem class
-
-          console.log({
-            x: x,
-            y: y,
-            xPos: xPos,
-            yPos: yPos,
-            gemName: gemName,
-            gemSprite: gemSprite
-          });
-      }while(y++ < grid[1]);
-    }while(x++ < grid[0]);
+        var xPos = (x * Gem.width) - Gem.width,
+            yPos = (y * Gem.height) - Gem.height,
+            gem = new Gem(null, null, null, null, xPos, yPos);
+      }while(y++ < this.grid_size[1]);
+    }while(x++ < this.grid_size[0]);
   }
 
   update(){
@@ -51,4 +35,15 @@ class Game {
   }
 }
 
-export default Game;
+var instance = null;
+class GameSingleton{
+  static get instance(){
+    if(!instance){
+      instance = new Game();
+    }
+
+    return instance;
+  }
+}
+
+export default GameSingleton;

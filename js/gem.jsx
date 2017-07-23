@@ -1,4 +1,6 @@
 import Game from './game.jsx';
+import Options from './options.js';
+const debug = Options.debug && (Options.ignore_debug.gem !== true);
 
 const gem_prefixs = [
   'yellow', 'blue', 'green', 'red', 'purple', 'pink'
@@ -15,16 +17,33 @@ class Gem{
   static get height(){ return gem_size.h; }
   static get margin(){ return gem_size.m; }
 
-  get margin(){ return this.gemType; }
+  set clickCallback(clickCallback) { this._clickCallback = clickCallback}
 
-  constructor(xPos, yPos){
+  constructor(xPos, yPos, clickCallback){
+    this._clickCallback = clickCallback;
     this.gemType = Game.instance.phaser.rnd.integerInRange(0, gem_prefixs.length-1);
     this.name = gem_prefixs[ this.gemType ] + '_gem_1';
     this.sprite = Game.instance.phaser.add.sprite(xPos, yPos, 'gems', this.name);
+
+    this.sprite.inputEnabled = true;
+    this.sprite.events.onInputDown.add(this.onClick, this);
   }
 
   isMatch(otherGem){
     return this.gemType === otherGem.gemType;
+  }
+
+  onClick(sprite, ptr){
+    if(debug)console.log('onClick called', arguments, this);
+
+    this._clickCallback(...arguments);
+  }
+
+  reposition(x, y){
+    if(debug)console.log('reposition called', arguments, this);
+
+    this.sprite.x = x;
+    this.sprite.y = y;
   }
 }
 

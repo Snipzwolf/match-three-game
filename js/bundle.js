@@ -78,7 +78,7 @@
 	
 	var _gem2 = _interopRequireDefault(_gem);
 	
-	var _grid = __webpack_require__(/*! ./grid.jsx */ 3);
+	var _grid = __webpack_require__(/*! ./grid.jsx */ 4);
 	
 	var _grid2 = _interopRequireDefault(_grid);
 	
@@ -175,9 +175,15 @@
 	
 	var _game2 = _interopRequireDefault(_game);
 	
+	var _options = __webpack_require__(/*! ./options.js */ 3);
+	
+	var _options2 = _interopRequireDefault(_options);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var debug = _options2.default.debug && _options2.default.ignore_debug.gem !== true;
 	
 	var gem_prefixs = ['yellow', 'blue', 'green', 'red', 'purple', 'pink'];
 	
@@ -189,9 +195,9 @@
 	
 	var Gem = function () {
 	  _createClass(Gem, [{
-	    key: 'margin',
-	    get: function get() {
-	      return this.gemType;
+	    key: 'clickCallback',
+	    set: function set(clickCallback) {
+	      this._clickCallback = clickCallback;
 	    }
 	  }], [{
 	    key: 'width',
@@ -210,18 +216,37 @@
 	    }
 	  }]);
 	
-	  function Gem(xPos, yPos) {
+	  function Gem(xPos, yPos, clickCallback) {
 	    _classCallCheck(this, Gem);
 	
+	    this._clickCallback = clickCallback;
 	    this.gemType = _game2.default.instance.phaser.rnd.integerInRange(0, gem_prefixs.length - 1);
 	    this.name = gem_prefixs[this.gemType] + '_gem_1';
 	    this.sprite = _game2.default.instance.phaser.add.sprite(xPos, yPos, 'gems', this.name);
+	
+	    this.sprite.inputEnabled = true;
+	    this.sprite.events.onInputDown.add(this.onClick, this);
 	  }
 	
 	  _createClass(Gem, [{
 	    key: 'isMatch',
 	    value: function isMatch(otherGem) {
 	      return this.gemType === otherGem.gemType;
+	    }
+	  }, {
+	    key: 'onClick',
+	    value: function onClick(sprite, ptr) {
+	      if (debug) console.log('onClick called', arguments, this);
+	
+	      this._clickCallback.apply(this, arguments);
+	    }
+	  }, {
+	    key: 'reposition',
+	    value: function reposition(x, y) {
+	      if (debug) console.log('reposition called', arguments, this);
+	
+	      this.sprite.x = x;
+	      this.sprite.y = y;
 	    }
 	  }]);
 	
@@ -256,6 +281,25 @@
 
 /***/ }),
 /* 3 */
+/*!***********************!*\
+  !*** ./js/options.js ***!
+  \***********************/
+/***/ (function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = Object.freeze({
+	  debug: true,
+	  ignore_debug: {
+	    gem: true
+	  }
+	});
+
+/***/ }),
+/* 4 */
 /*!*********************!*\
   !*** ./js/grid.jsx ***!
   \*********************/
@@ -273,56 +317,130 @@
 	
 	var _gem2 = _interopRequireDefault(_gem);
 	
+	var _options = __webpack_require__(/*! ./options.js */ 3);
+	
+	var _options2 = _interopRequireDefault(_options);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
+	var debug = _options2.default.debug;
+	
 	/*
-	  Grid position is going from left to right and top to bottom
+	  Grid position is going from top to bottom and left to right
 	  ie a 2x2 grid would have the positions like so
 	  -----
-	  |1|2|
-	  |3|4|
+	  |1|3|
+	  |2|4|
 	  ----
 	*/
 	
 	var GridElement = function () {
-	  function GridElement(xPos, yPos, gridPos) {
+	  _createClass(GridElement, [{
+	    key: 'gridPos',
+	    get: function get() {
+	      return this._gridPos;
+	    },
+	    set: function set(v) {
+	      return;
+	    } //dont want this settable externally
+	
+	  }, {
+	    key: 'gem',
+	    get: function get() {
+	      return this._gem;
+	    },
+	    set: function set(newGem) {
+	      this._gem = newGem;
+	      this._gem.reposition(this.xPos, this.yPos);
+	      this._gem.clickCallback = this.onGemClick.bind(this);
+	    }
+	  }]);
+	
+	  function GridElement(xPos, yPos, gridPos, gridClickCallback) {
 	    _classCallCheck(this, GridElement);
 	
 	    this.xPos = xPos;
 	    this.yPos = yPos;
-	    this.gridPos = gridPos;
+	    this._gridPos = gridPos;
+	    this.gridClickCallback = gridClickCallback;
 	
-	    this.gem = new _gem2.default(this.xPos, this.yPos);
+	    this.gem = new _gem2.default(this.xPos, this.yPos, this.onGemClick.bind(this));
 	  }
 	
 	  _createClass(GridElement, [{
-	    key: 'swap',
-	    value: function swap(otherGridEl) {}
+	    key: 'onGemClick',
+	    value: function onGemClick(sprite, ptr) {
+	      if (debug) console.log('onGemClick called', arguments, this);
+	      this.gridClickCallback.apply(this, Array.prototype.slice.call(arguments).concat([this]));
+	    }
+	  }, {
+	    key: 'swapGems',
+	    value: function swapGems(otherGridEl) {
+	      var oldGem = this.gem;
+	      this.gem = otherGridEl.gem;
+	      otherGridEl.gem = oldGem;
+	    }
 	  }]);
 	
 	  return GridElement;
 	}();
 	
-	var Grid = function Grid(x, y) {
-	  _classCallCheck(this, Grid);
+	var Grid = function () {
+	  function Grid(x, y) {
+	    var _this = this;
 	
-	  this.width = x;
-	  this.height = y;
+	    _classCallCheck(this, Grid);
 	
-	  var i = 1;
-	  this.grid = Array(x).fill().map(function (xV, xI, xArr) {
-	    return Array(y).fill().map(function (yV, yI, yArr) {
-	      var xPos = (xI + 1) * _gem2.default.width - _gem2.default.width,
-	          yPos = (yI + 1) * _gem2.default.height - _gem2.default.height;
+	    this.currentSelected = null;
+	    this.width = x;
+	    this.height = y;
 	
-	      return new GridElement(xPos, yPos, i++);
+	    var i = 1;
+	    this.grid = Array(x).fill().map(function (xV, xI, xArr) {
+	      return Array(y).fill().map(function (yV, yI, yArr) {
+	        var xPos = (xI + 1) * _gem2.default.width - _gem2.default.width,
+	            yPos = (yI + 1) * _gem2.default.height - _gem2.default.height;
+	
+	        return new GridElement(xPos, yPos, i++, _this.onGridElementClick.bind(_this));
+	      });
 	    });
-	  });
+	  }
 	
-	  console.log(this, i);
-	};
+	  _createClass(Grid, [{
+	    key: 'onGridElementClick',
+	    value: function onGridElementClick(sprite, ptr, gridEl) {
+	      if (debug) console.log('onGridElementClick called', arguments, this);
+	
+	      if (this.currentSelected === null) {
+	        //selected an intial gem to move
+	        if (debug) console.log('select');
+	        this.currentSelected = gridEl;
+	      } else if (this.currentSelected === gridEl) {
+	        //deselected intial gem
+	        if (debug) console.log('deselect');
+	        this.currentSelected = null;
+	      } else if (this.canSwap(this.currentSelected, gridEl)) {
+	        if (debug) console.log('swap');
+	        this.currentSelected.swapGems(gridEl);
+	        this.currentSelected = null;
+	      } else {
+	        if (debug) console.log('illegal move');
+	        this.currentSelected = null;
+	      }
+	    }
+	  }, {
+	    key: 'canSwap',
+	    value: function canSwap(gridEl, otherGridEl) {
+	      if (debug) console.log('onGridElementClick canSwap', arguments, this, gridEl.gridPos, otherGridEl.gridPos);
+	
+	      return gridEl.gridPos + this.height === otherGridEl.gridPos || gridEl.gridPos - this.height === otherGridEl.gridPos || gridEl.gridPos + 1 === otherGridEl.gridPos || gridEl.gridPos - 1 === otherGridEl.gridPos;
+	    }
+	  }]);
+	
+	  return Grid;
+	}();
 	
 	exports.default = Grid;
 

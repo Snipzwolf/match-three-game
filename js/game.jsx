@@ -1,11 +1,12 @@
 import Gem from './gem.jsx';
+import Grid from './grid.jsx';
 
 class Game {
   get phaser(){ return this.game; }
 
   constructor(){
     this.grid_size = [15, 9];
-    this.grid = [];
+    this.grid = null;
     this.game = new Phaser.Game(this.grid_size[0] * Gem.width, this.grid_size[1] * Gem.height, Phaser.AUTO, 'game-canvas', {
       preload: () => this.preload(),
       create: () => this.create(),
@@ -19,15 +20,7 @@ class Game {
   }
 
   create(){
-    var x = 1, y;
-    do{
-      y = 1;
-      do{
-        var xPos = (x * Gem.width) - Gem.width,
-            yPos = (y * Gem.height) - Gem.height,
-            gem = new Gem(null, null, null, null, xPos, yPos);
-      }while(y++ < this.grid_size[1]);
-    }while(x++ < this.grid_size[0]);
+    this.grid = new Grid(this.grid_size[0], this.grid_size[1])
   }
 
   update(){

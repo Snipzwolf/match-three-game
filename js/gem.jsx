@@ -15,16 +15,16 @@ class Gem{
   static get height(){ return gem_size.h; }
   static get margin(){ return gem_size.m; }
 
-  constructor(left, right, up, down, xPos, yPos){
-    this.game = Game.instance;
-    this.left = left;
-    this.right = right;
-    this.up = up;
-    this.down = down;
+  get margin(){ return this.gemType; }
 
-    this.gemType = this.game.phaser.rnd.integerInRange(0, gem_prefixs.length-1);
+  constructor(xPos, yPos){
+    this.gemType = Game.instance.phaser.rnd.integerInRange(0, gem_prefixs.length-1);
     this.name = gem_prefixs[ this.gemType ] + '_gem_1';
-    this.sprite = this.game.phaser.add.sprite(xPos, yPos, 'gems', this.name);
+    this.sprite = Game.instance.phaser.add.sprite(xPos, yPos, 'gems', this.name);
+  }
+
+  isMatch(otherGem){
+    return this.gemType === otherGem.gemType;
   }
 }
 

@@ -49,10 +49,10 @@ class Grid{
     this.height = y;
 
     var i = 1;
-    this.grid = Array(x).fill().map((xV, xI, xArr) => {
-      return Array(y).fill().map((yV, yI, yArr) => {
-        var xPos = ((xI + 1) * Gem.width) - Gem.width,
-            yPos = ((yI + 1) * Gem.height) - Gem.height;
+    this.grid = Array(x).fill().map((xVal, xIdx, xArr) => {
+      return Array(y).fill().map((yVal, yIdx, yArr) => {
+        var xPos = ((xIdx + 1) * Gem.width) - Gem.width,
+            yPos = ((yIdx + 1) * Gem.height) - Gem.height;
 
         return new GridElement(xPos, yPos, i++, this.onGridElementClick.bind(this));
       });
@@ -72,10 +72,53 @@ class Grid{
       if(debug)console.log('swap');
       this.currentSelected.swapGems(gridEl);
       this.currentSelected = null;
+      this.checkForMatch(gridEl);
     }else{
       if(debug)console.log('illegal move');
       this.currentSelected = null;
     }
+  }
+
+  checkForMatch(startEl){
+    if(debug)console.log('checkForMatch called', arguments, this);
+
+  }
+
+  getYAxisScore(startEl){
+
+  }
+
+  getXAxisScore(startEl){
+
+  }
+
+  getElementAt(gridPos){
+    if(debug)console.log('getElementAt called', arguments, this);
+
+    var xPos = this.getXIndex(gridPos),
+        yPos = this.getYindex(gridPos);
+
+    return this.grid[xPos][yPos];
+  }
+
+  getBounds(gridPos){
+    var currentX = this.getXIndex(gridPos),
+        currentY = this.getYindex(gridPos);
+
+    return {
+      'top' : (currentY === 0) ?  gridPos : (gridPos - (currentY + 1)),
+      'bottom' : (currentY === this.height-1) ?  gridPos : (gridPos + (currentY + 1 - this.height)),
+      'left' : (currentX === 0) ?  gridPos : (gridPos - (currentX * this.height)),
+      'right' : (currentX === this.width-1) ?  gridPos : (gridPos - ((currentX + 1 - this.width) * this.height))
+    };
+  }
+
+  getXIndex(gridPos){
+    return Math.ceil(this.width / pos);
+  }
+
+  getYindex(gridPos){
+    return this.width % pos;
   }
 
   canSwap(gridEl, otherGridEl){

@@ -398,10 +398,10 @@
 	    this.height = y;
 	
 	    var i = 1;
-	    this.grid = Array(x).fill().map(function (xV, xI, xArr) {
-	      return Array(y).fill().map(function (yV, yI, yArr) {
-	        var xPos = (xI + 1) * _gem2.default.width - _gem2.default.width,
-	            yPos = (yI + 1) * _gem2.default.height - _gem2.default.height;
+	    this.grid = Array(x).fill().map(function (xVal, xIdx, xArr) {
+	      return Array(y).fill().map(function (yVal, yIdx, yArr) {
+	        var xPos = (xIdx + 1) * _gem2.default.width - _gem2.default.width,
+	            yPos = (yIdx + 1) * _gem2.default.height - _gem2.default.height;
 	
 	        return new GridElement(xPos, yPos, i++, _this.onGridElementClick.bind(_this));
 	      });
@@ -425,10 +425,55 @@
 	        if (debug) console.log('swap');
 	        this.currentSelected.swapGems(gridEl);
 	        this.currentSelected = null;
+	        this.checkForMatch(gridEl);
 	      } else {
 	        if (debug) console.log('illegal move');
 	        this.currentSelected = null;
 	      }
+	    }
+	  }, {
+	    key: 'checkForMatch',
+	    value: function checkForMatch(startEl) {
+	      if (debug) console.log('checkForMatch called', arguments, this);
+	    }
+	  }, {
+	    key: 'getYAxisScore',
+	    value: function getYAxisScore(startEl) {}
+	  }, {
+	    key: 'getXAxisScore',
+	    value: function getXAxisScore(startEl) {}
+	  }, {
+	    key: 'getElementAt',
+	    value: function getElementAt(gridPos) {
+	      if (debug) console.log('getElementAt called', arguments, this);
+	
+	      var xPos = this.getXIndex(gridPos),
+	          yPos = this.getYindex(gridPos);
+	
+	      return this.grid[xPos][yPos];
+	    }
+	  }, {
+	    key: 'getBounds',
+	    value: function getBounds(gridPos) {
+	      var currentX = this.getXIndex(gridPos),
+	          currentY = this.getYindex(gridPos);
+	
+	      return {
+	        'top': currentY === 0 ? gridPos : gridPos - (currentY + 1),
+	        'bottom': currentY === this.height - 1 ? gridPos : gridPos + (currentY + 1 - this.height),
+	        'left': currentX === 0 ? gridPos : gridPos - currentX * this.height,
+	        'right': currentX === this.width - 1 ? gridPos : gridPos - (currentX + 1 - this.width) * this.height
+	      };
+	    }
+	  }, {
+	    key: 'getXIndex',
+	    value: function getXIndex(gridPos) {
+	      return Math.ceil(this.width / pos);
+	    }
+	  }, {
+	    key: 'getYindex',
+	    value: function getYindex(gridPos) {
+	      return this.width % pos;
 	    }
 	  }, {
 	    key: 'canSwap',

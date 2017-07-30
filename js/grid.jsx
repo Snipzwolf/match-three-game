@@ -1,4 +1,5 @@
 import Gem from './gem.jsx';
+import Game from './game.jsx';
 import Options from './options.js';
 const debug = Options.debug;
 
@@ -72,24 +73,11 @@ class Grid{
       if(debug)console.log('swap');
       this.currentSelected.swapGems(gridEl);
       this.currentSelected = null;
-      this.checkForMatch(gridEl);
+      Game.instance.checkForMatch(gridEl); //this is not great
     }else{
       if(debug)console.log('illegal move');
       this.currentSelected = null;
     }
-  }
-
-  checkForMatch(startEl){
-    if(debug)console.log('checkForMatch called', arguments, this);
-
-  }
-
-  getYAxisScore(startEl){
-
-  }
-
-  getXAxisScore(startEl){
-
   }
 
   getElementAt(gridPos){

@@ -26,6 +26,46 @@ class Game {
   update(){
 
   }
+
+  checkForMatch(startEl){
+    if(debug)console.log('checkForMatch called', arguments, this);
+
+  }
+
+  getYAxisScore(startEl){
+    var bounds = this.grid.getBounds(startEl.gridPos);
+
+    var getScore = (increment, step, matchArr) => {
+      matchArr = matchArr || [];
+      increment=+step;
+
+      var nextPos = startEl.gridPos + increment,
+          nextEl = this.grid.getElementAt(nextPos);
+
+      //TODO do bounds check
+      
+      if(startEl.gem.isMatch(nextEl.gem)){
+        matchArr.push(nextEl);
+        return getScore(increment, step, matchArr);
+      }
+
+      return {
+        'score' : increment - 1,
+        'matches' : matchArr
+      };
+    };
+
+    var up = getScore(0, 1),
+        down = getScore(0, -1);
+
+    if(up.matches + down.matches > 2){
+
+    }
+  }
+
+  getXAxisScore(startEl){
+    var bounds = this.grid.getBounds(startEl.gridPos);
+  }
 }
 
 var instance = null;

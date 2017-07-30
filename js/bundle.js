@@ -128,6 +128,48 @@
 	  }, {
 	    key: 'update',
 	    value: function update() {}
+	  }, {
+	    key: 'checkForMatch',
+	    value: function checkForMatch(startEl) {
+	      if (debug) console.log('checkForMatch called', arguments, this);
+	    }
+	  }, {
+	    key: 'getYAxisScore',
+	    value: function getYAxisScore(startEl) {
+	      var _this2 = this;
+	
+	      var bounds = this.grid.getBounds(startEl.gridPos);
+	
+	      var getScore = function getScore(increment, step, matchArr) {
+	        matchArr = matchArr || [];
+	        increment = +step;
+	
+	        var nextPos = startEl.gridPos + increment,
+	            nextEl = _this2.grid.getElementAt(nextPos);
+	
+	        //TODO do bounds check
+	
+	        if (startEl.gem.isMatch(nextEl.gem)) {
+	          matchArr.push(nextEl);
+	          return getScore(increment, step, matchArr);
+	        }
+	
+	        return {
+	          'score': increment - 1,
+	          'matches': matchArr
+	        };
+	      };
+	
+	      var up = getScore(0, 1),
+	          down = getScore(0, -1);
+	
+	      if (up.matches + down.matches > 2) {}
+	    }
+	  }, {
+	    key: 'getXAxisScore',
+	    value: function getXAxisScore(startEl) {
+	      var bounds = this.grid.getBounds(startEl.gridPos);
+	    }
 	  }]);
 	
 	  return Game;
@@ -317,6 +359,10 @@
 	
 	var _gem2 = _interopRequireDefault(_gem);
 	
+	var _game = __webpack_require__(/*! ./game.jsx */ 1);
+	
+	var _game2 = _interopRequireDefault(_game);
+	
 	var _options = __webpack_require__(/*! ./options.js */ 3);
 	
 	var _options2 = _interopRequireDefault(_options);
@@ -425,23 +471,12 @@
 	        if (debug) console.log('swap');
 	        this.currentSelected.swapGems(gridEl);
 	        this.currentSelected = null;
-	        this.checkForMatch(gridEl);
+	        _game2.default.instance.checkForMatch(gridEl); //this is not great
 	      } else {
 	        if (debug) console.log('illegal move');
 	        this.currentSelected = null;
 	      }
 	    }
-	  }, {
-	    key: 'checkForMatch',
-	    value: function checkForMatch(startEl) {
-	      if (debug) console.log('checkForMatch called', arguments, this);
-	    }
-	  }, {
-	    key: 'getYAxisScore',
-	    value: function getYAxisScore(startEl) {}
-	  }, {
-	    key: 'getXAxisScore',
-	    value: function getXAxisScore(startEl) {}
 	  }, {
 	    key: 'getElementAt',
 	    value: function getElementAt(gridPos) {

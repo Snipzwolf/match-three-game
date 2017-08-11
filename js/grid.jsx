@@ -89,24 +89,87 @@ class Grid{
     return this.grid[xPos][yPos];
   }
 
+  /*
+  * Get the grid element position above the current position
+  * @return {number} the grid position of the element or null if at the bounds of the grid
+  */
+  up(currentPos){
+    var retPos = currentPos - 1,
+        bounds = this.getBounds(currentPos);
+
+    if(bounds.top === currentPos){
+      return null;
+    }
+
+    return retPos;
+  }
+
+  /*
+  * Get the grid element position below the current position
+  * @return {number} the grid position of the element or null if at the bounds of the grid
+  */
+  down(currentPos){
+    var retPos = currentPos + 1,
+        bounds = this.getBounds(currentPos);
+
+    if(bounds.bottom === currentPos){
+      return null;
+    }
+
+    return retPos;
+  }
+
+  /*
+  * Get the grid element position to the left the current position
+  * @return {number} the grid position of the element or null if at the bounds of the grid
+  */
+  left(currentPos){
+    var retPos = currentPos - this.height,
+        bounds = this.getBounds(currentPos);
+
+    if(bounds.left === currentPos){
+      return null;
+    }
+
+    return retPos;
+  }
+
+  /*
+  * Get the grid element position to the right the current position
+  * @return {number} the grid position of the element or null if at the bounds of the grid
+  */
+  right(currentPos){
+    var retPos = currentPos - this.height,
+        bounds = this.getBounds(currentPos);
+
+    if(bounds.right === currentPos){
+      return null;
+    }
+
+    return retPos;
+  }
+
   getBounds(gridPos){
     var currentX = this.getXIndex(gridPos),
-        currentY = this.getYindex(gridPos);
+        currentY = this.getYindex(gridPos),
+        ret = {
+          'top' : (currentY === 0) ?  gridPos : (gridPos - (currentY + 1)),
+          'bottom' : (currentY === this.height-1) ?  gridPos : (gridPos + (currentY + 1 - this.height)),
+          'left' : (currentX === 0) ?  gridPos : (gridPos - (currentX * this.height)),
+          'right' : (currentX === this.width-1) ?  gridPos : (gridPos - ((currentX + 1 - this.width) * this.height))
+        };
 
-    return {
-      'top' : (currentY === 0) ?  gridPos : (gridPos - (currentY + 1)),
-      'bottom' : (currentY === this.height-1) ?  gridPos : (gridPos + (currentY + 1 - this.height)),
-      'left' : (currentX === 0) ?  gridPos : (gridPos - (currentX * this.height)),
-      'right' : (currentX === this.width-1) ?  gridPos : (gridPos - ((currentX + 1 - this.width) * this.height))
-    };
+    if(debug)console.log('getBounds called', ret, arguments, this);
+
+    return ret;
   }
 
   getXIndex(gridPos){
-    return Math.ceil(this.width / pos);
+    return Math.ceil(this.width / gridPos);
   }
 
   getYindex(gridPos){
-    return this.width % pos;
+    return this.width % gridPos;
   }
 
   canSwap(gridEl, otherGridEl){

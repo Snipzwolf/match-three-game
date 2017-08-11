@@ -82,9 +82,15 @@
 	
 	var _grid2 = _interopRequireDefault(_grid);
 	
+	var _options = __webpack_require__(/*! ./options.js */ 3);
+	
+	var _options2 = _interopRequireDefault(_options);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var debug = _options2.default.debug && _options2.default.ignore_debug.game !== true;
 	
 	var Game = function () {
 	  _createClass(Game, [{
@@ -132,6 +138,7 @@
 	    key: 'checkForMatch',
 	    value: function checkForMatch(startEl) {
 	      if (debug) console.log('checkForMatch called', arguments, this);
+	      this.getYAxisScore(startEl);
 	    }
 	  }, {
 	    key: 'getYAxisScore',
@@ -140,30 +147,38 @@
 	
 	      var bounds = this.grid.getBounds(startEl.gridPos);
 	
-	      var getScore = function getScore(increment, step, matchArr) {
-	        matchArr = matchArr || [];
-	        increment = +step;
+	      var getScore = function getScore(reverse, matchArr, lastEl) {
+	        matchArr = matchArr || [startEl];
+	        lastEl = lastEl || startEl;
 	
-	        var nextPos = startEl.gridPos + increment,
-	            nextEl = _this2.grid.getElementAt(nextPos);
+	        var nextPos = reverse ? _this2.grid.down(lastEl.gridPos) : _this2.grid.up(lastEl.gridPos);
 	
-	        //TODO do bounds check
-	
-	        if (startEl.gem.isMatch(nextEl.gem)) {
-	          matchArr.push(nextEl);
-	          return getScore(increment, step, matchArr);
+	        if (nextEl === null) {
+	          return matchArr;
 	        }
 	
-	        return {
-	          'score': increment - 1,
-	          'matches': matchArr
-	        };
+	        var nextEl = _this2.grid.getElementAt(nextPos);
+	
+	        try {
+	          if (lastEl.gem.isMatch(nextEl.gem)) {
+	            matchArr.push(nextEl);
+	            getScore(reverse, matchArr);
+	          }
+	        } catch (ex) {
+	          debugger;
+	        }
+	
+	        return matchArr;
 	      };
 	
-	      var up = getScore(0, 1),
-	          down = getScore(0, -1);
+	      var up = getScore(false),
+	          down = getScore(true);
 	
-	      if (up.matches + down.matches > 2) {}
+	      if (up.length + down.length > 2) {
+	        if (debug) console.log('matches found vertical', up, down, arguments, this);
+	      } else {
+	        if (debug) console.log('np matches found vertical', arguments, this);
+	      }
 	    }
 	  }, {
 	    key: 'getXAxisScore',
@@ -237,6 +252,14 @@
 	
 	var Gem = function () {
 	  _createClass(Gem, [{
+	    key: 'gemType',
+	    get: function get() {
+	      return this._gemType;
+	    },
+	    set: function set(a) {
+	      return;
+	    }
+	  }, {
 	    key: 'clickCallback',
 	    set: function set(clickCallback) {
 	      this._clickCallback = clickCallback;
@@ -262,7 +285,7 @@
 	    _classCallCheck(this, Gem);
 	
 	    this._clickCallback = clickCallback;
-	    this.gemType = _game2.default.instance.phaser.rnd.integerInRange(0, gem_prefixs.length - 1);
+	    this._gemType = _game2.default.instance.phaser.rnd.integerInRange(0, gem_prefixs.length - 1);
 	    this.name = gem_prefixs[this.gemType] + '_gem_1';
 	    this.sprite = _game2.default.instance.phaser.add.sprite(xPos, yPos, 'gems', this.name);
 	
@@ -295,30 +318,6 @@
 	  return Gem;
 	}();
 	
-	var gem = function gem(left, right, up, down) {
-	  this.isMatch = function (gem) {
-	    return this.gemType === gem.gemType;
-	  };
-	
-	  this.hasMatch = function (direction) {
-	    if (typeof direction !== 'undefined') {
-	      return this.isMatch(this[direction]) ? this[direction].hasMatch(direction) + 1 : 0;
-	    } else {
-	      var matches = 0;
-	      for (var next in ['up', 'down', 'left', 'right']) {
-	        if (this.isMatch(this[next])) {
-	          var currMatches = this[next].hasMatch(next);
-	          if (currMatches > 3) {
-	            matches += currMatches;
-	          }
-	        }
-	      }
-	
-	      return matches;
-	    }
-	  };
-	};
-	
 	exports.default = Gem;
 
 /***/ }),
@@ -336,7 +335,8 @@
 	exports.default = Object.freeze({
 	  debug: true,
 	  ignore_debug: {
-	    gem: true
+	    gem: true,
+	    game: false
 	  }
 	});
 
@@ -487,28 +487,103 @@
 	
 	      return this.grid[xPos][yPos];
 	    }
+	
+	    /*
+	    * Get the grid element position above the current position
+	    * @return {number} the grid position of the element or null if at the bounds of the grid
+	    */
+	
+	  }, {
+	    key: 'up',
+	    value: function up(currentPos) {
+	      var retPos = currentPos - 1,
+	          bounds = this.getBounds(currentPos);
+	
+	      if (bounds.top === currentPos) {
+	        return null;
+	      }
+	
+	      return retPos;
+	    }
+	
+	    /*
+	    * Get the grid element position below the current position
+	    * @return {number} the grid position of the element or null if at the bounds of the grid
+	    */
+	
+	  }, {
+	    key: 'down',
+	    value: function down(currentPos) {
+	      var retPos = currentPos + 1,
+	          bounds = this.getBounds(currentPos);
+	
+	      if (bounds.bottom === currentPos) {
+	        return null;
+	      }
+	
+	      return retPos;
+	    }
+	
+	    /*
+	    * Get the grid element position to the left the current position
+	    * @return {number} the grid position of the element or null if at the bounds of the grid
+	    */
+	
+	  }, {
+	    key: 'left',
+	    value: function left(currentPos) {
+	      var retPos = currentPos - this.height,
+	          bounds = this.getBounds(currentPos);
+	
+	      if (bounds.left === currentPos) {
+	        return null;
+	      }
+	
+	      return retPos;
+	    }
+	
+	    /*
+	    * Get the grid element position to the right the current position
+	    * @return {number} the grid position of the element or null if at the bounds of the grid
+	    */
+	
+	  }, {
+	    key: 'right',
+	    value: function right(currentPos) {
+	      var retPos = currentPos - this.height,
+	          bounds = this.getBounds(currentPos);
+	
+	      if (bounds.right === currentPos) {
+	        return null;
+	      }
+	
+	      return retPos;
+	    }
 	  }, {
 	    key: 'getBounds',
 	    value: function getBounds(gridPos) {
 	      var currentX = this.getXIndex(gridPos),
-	          currentY = this.getYindex(gridPos);
-	
-	      return {
+	          currentY = this.getYindex(gridPos),
+	          ret = {
 	        'top': currentY === 0 ? gridPos : gridPos - (currentY + 1),
 	        'bottom': currentY === this.height - 1 ? gridPos : gridPos + (currentY + 1 - this.height),
 	        'left': currentX === 0 ? gridPos : gridPos - currentX * this.height,
 	        'right': currentX === this.width - 1 ? gridPos : gridPos - (currentX + 1 - this.width) * this.height
 	      };
+	
+	      if (debug) console.log('getBounds called', ret, arguments, this);
+	
+	      return ret;
 	    }
 	  }, {
 	    key: 'getXIndex',
 	    value: function getXIndex(gridPos) {
-	      return Math.ceil(this.width / pos);
+	      return Math.ceil(this.width / gridPos);
 	    }
 	  }, {
 	    key: 'getYindex',
 	    value: function getYindex(gridPos) {
-	      return this.width % pos;
+	      return this.width % gridPos;
 	    }
 	  }, {
 	    key: 'canSwap',

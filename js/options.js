@@ -1,6 +1,7 @@
 export default Object.freeze({
   debug: true,
   ignore_debug: {
-    gem: true
+    gem: true,
+    game: false
   }
 });

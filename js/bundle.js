@@ -105,7 +105,8 @@
 	
 	    _classCallCheck(this, Game);
 	
-	    this.grid_size = [15, 9];
+	    //this.grid_size = [15, 9];
+	    this.grid_size = [3, 3];
 	    this.grid = null;
 	    this.game = new Phaser.Game(this.grid_size[0] * _gem2.default.width, this.grid_size[1] * _gem2.default.height, Phaser.AUTO, 'game-canvas', {
 	      preload: function preload() {
@@ -143,29 +144,27 @@
 	  }, {
 	    key: 'getYAxisScore',
 	    value: function getYAxisScore(startEl) {
-	      var _this2 = this;
+	      var _arguments = arguments,
+	          _this2 = this;
 	
 	      var bounds = this.grid.getBounds(startEl.gridPos);
 	
 	      var getScore = function getScore(reverse, matchArr, lastEl) {
+	        if (debug) console.log('getScore called', _arguments, _this2);
 	        matchArr = matchArr || [startEl];
 	        lastEl = lastEl || startEl;
 	
 	        var nextPos = reverse ? _this2.grid.down(lastEl.gridPos) : _this2.grid.up(lastEl.gridPos);
 	
-	        if (nextEl === null) {
+	        if (nextPos === null) {
 	          return matchArr;
 	        }
 	
 	        var nextEl = _this2.grid.getElementAt(nextPos);
 	
-	        try {
-	          if (lastEl.gem.isMatch(nextEl.gem)) {
-	            matchArr.push(nextEl);
-	            getScore(reverse, matchArr);
-	          }
-	        } catch (ex) {
-	          debugger;
+	        if (lastEl.gem.isMatch(nextEl.gem)) {
+	          matchArr.push(nextEl);
+	          getScore(reverse, matchArr);
 	        }
 	
 	        return matchArr;
@@ -485,6 +484,8 @@
 	      var xPos = this.getXIndex(gridPos),
 	          yPos = this.getYindex(gridPos);
 	
+	      if (debug) console.log('getElementAt', xPos, yPos);
+	
 	      return this.grid[xPos][yPos];
 	    }
 	
@@ -516,7 +517,7 @@
 	    value: function down(currentPos) {
 	      var retPos = currentPos + 1,
 	          bounds = this.getBounds(currentPos);
-	
+	      if (currentPos === 9) debugger;
 	      if (bounds.bottom === currentPos) {
 	        return null;
 	      }
@@ -562,13 +563,19 @@
 	  }, {
 	    key: 'getBounds',
 	    value: function getBounds(gridPos) {
+	      var _this2 = this;
+	
 	      var currentX = this.getXIndex(gridPos),
 	          currentY = this.getYindex(gridPos),
-	          ret = {
-	        'top': currentY === 0 ? gridPos : gridPos - (currentY + 1),
-	        'bottom': currentY === this.height - 1 ? gridPos : gridPos + (currentY + 1 - this.height),
-	        'left': currentX === 0 ? gridPos : gridPos - currentX * this.height,
-	        'right': currentX === this.width - 1 ? gridPos : gridPos - (currentX + 1 - this.width) * this.height
+	          ret = { //FIXME this might be better breaking across lines as there is brackets and arrows everywhere :S
+	        'top': gridPos - currentY,
+	        'bottom': gridPos + (this.height - (currentY + 1)),
+	        'left': function (pos) {
+	          return pos <= 0 ? gridPos : pos;
+	        }(gridPos - this.height),
+	        'right': function (pos) {
+	          return pos > _this2.width * _this2.height ? gridPos : pos;
+	        }(gridPos + this.height)
 	      };
 	
 	      if (debug) console.log('getBounds called', ret, arguments, this);
@@ -578,12 +585,19 @@
 	  }, {
 	    key: 'getXIndex',
 	    value: function getXIndex(gridPos) {
-	      return Math.ceil(this.width / gridPos);
+	      if (debug) console.log('getXIndex called', arguments, this);
+	      return Math.ceil(gridPos / this.width) - 1;
 	    }
 	  }, {
 	    key: 'getYindex',
 	    value: function getYindex(gridPos) {
-	      return this.width % gridPos;
+	      var _this3 = this;
+	
+	      if (debug) console.log('getYindex called', arguments, this);
+	
+	      return function (pos) {
+	        return pos || _this3.height;
+	      }(gridPos % this.height) - 1;
 	    }
 	  }, {
 	    key: 'canSwap',

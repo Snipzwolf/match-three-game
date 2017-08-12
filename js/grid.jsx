@@ -86,6 +86,8 @@ class Grid{
     var xPos = this.getXIndex(gridPos),
         yPos = this.getYindex(gridPos);
 
+    if(debug)console.log('getElementAt', xPos, yPos);
+
     return this.grid[xPos][yPos];
   }
 
@@ -111,7 +113,7 @@ class Grid{
   down(currentPos){
     var retPos = currentPos + 1,
         bounds = this.getBounds(currentPos);
-
+if(currentPos === 9)debugger;
     if(bounds.bottom === currentPos){
       return null;
     }
@@ -152,11 +154,11 @@ class Grid{
   getBounds(gridPos){
     var currentX = this.getXIndex(gridPos),
         currentY = this.getYindex(gridPos),
-        ret = {
-          'top' : (currentY === 0) ?  gridPos : (gridPos - (currentY + 1)),
-          'bottom' : (currentY === this.height-1) ?  gridPos : (gridPos + (currentY + 1 - this.height)),
-          'left' : (currentX === 0) ?  gridPos : (gridPos - (currentX * this.height)),
-          'right' : (currentX === this.width-1) ?  gridPos : (gridPos - ((currentX + 1 - this.width) * this.height))
+        ret = { //FIXME this might be better breaking across lines as there is brackets and arrows everywhere :S
+          'top' : gridPos - currentY,
+          'bottom' : gridPos + (this.height - (currentY + 1)),
+          'left' : ((pos) => (pos <= 0) ? gridPos : pos )(gridPos - this.height),
+          'right' : ((pos) => (pos > (this.width * this.height)) ? gridPos : pos )(gridPos + this.height)
         };
 
     if(debug)console.log('getBounds called', ret, arguments, this);
@@ -165,11 +167,14 @@ class Grid{
   }
 
   getXIndex(gridPos){
-    return Math.ceil(this.width / gridPos);
+    if(debug)console.log('getXIndex called', arguments, this);
+    return Math.ceil(gridPos / this.width) - 1;
   }
 
   getYindex(gridPos){
-    return this.width % gridPos;
+    if(debug)console.log('getYindex called', arguments, this);
+
+    return ((pos) => pos || this.height)(gridPos % this.height) - 1;
   }
 
   canSwap(gridEl, otherGridEl){

@@ -137,24 +137,21 @@
 	    value: function update() {}
 	  }, {
 	    key: 'checkForMatch',
-	    value: function checkForMatch(startEl) {
-	      if (debug) console.log('checkForMatch called', arguments, this);
-	      this.getYAxisScore(startEl);
-	    }
-	  }, {
-	    key: 'getYAxisScore',
-	    value: function getYAxisScore(startEl) {
+	    value: function checkForMatch(firstEl, secondEl) {
 	      var _arguments = arguments,
 	          _this2 = this;
 	
-	      var bounds = this.grid.getBounds(startEl.gridPos);
+	      if (debug) console.log('checkForMatch called', arguments, this);
+	      //this.getYAxisScore(startEl);
 	
-	      var getScore = function getScore(reverse, matchArr, lastEl) {
+	      var getScore = function getScore(funcName, startEl, matchArr, lastEl) {
 	        if (debug) console.log('getScore called', _arguments, _this2);
 	        matchArr = matchArr || [startEl];
 	        lastEl = lastEl || startEl;
 	
-	        var nextPos = reverse ? _this2.grid.down(lastEl.gridPos) : _this2.grid.up(lastEl.gridPos);
+	        var nextPos = _this2.grid[funcName](lastEl.gridPos);
+	
+	        if (debug) console.log('getScore nextPos', nextPos, nextPos === null);
 	
 	        if (nextPos === null) {
 	          return matchArr;
@@ -164,25 +161,33 @@
 	
 	        if (lastEl.gem.isMatch(nextEl.gem)) {
 	          matchArr.push(nextEl);
-	          getScore(reverse, matchArr);
+	          getScore(funcName, startEl, matchArr, nextEl);
 	        }
 	
 	        return matchArr;
 	      };
 	
-	      var up = getScore(false),
-	          down = getScore(true);
+	      Object.keys(arguments).map(function (key, idx) {
+	        var xMatches = getScore('left', _arguments[key]),
+	            yMatches = getScore('up', _arguments[key]);
 	
-	      if (up.length + down.length > 2) {
-	        if (debug) console.log('matches found vertical', up, down, arguments, this);
-	      } else {
-	        if (debug) console.log('np matches found vertical', arguments, this);
-	      }
-	    }
-	  }, {
-	    key: 'getXAxisScore',
-	    value: function getXAxisScore(startEl) {
-	      var bounds = this.grid.getBounds(startEl.gridPos);
+	        getScore('right', _arguments[key], xMatches);
+	        getScore('down', _arguments[key], yMatches);
+	
+	        if (yMatches.length + xMatches.length > 2) {
+	          if (debug) console.log('matches found', xMatches, yMatches);
+	
+	          if (xMatches.length > 3) {
+	            //TODO something
+	          }
+	
+	          if (yMatches.length > 3) {
+	            //TODO something
+	          }
+	        } else {
+	          if (debug) console.log('no matches found', _arguments, _this2);
+	        }
+	      });
 	    }
 	  }]);
 	
@@ -469,8 +474,8 @@
 	      } else if (this.canSwap(this.currentSelected, gridEl)) {
 	        if (debug) console.log('swap');
 	        this.currentSelected.swapGems(gridEl);
+	        _game2.default.instance.checkForMatch(this.currentSelected, gridEl);
 	        this.currentSelected = null;
-	        _game2.default.instance.checkForMatch(gridEl); //this is not great
 	      } else {
 	        if (debug) console.log('illegal move');
 	        this.currentSelected = null;
@@ -517,7 +522,7 @@
 	    value: function down(currentPos) {
 	      var retPos = currentPos + 1,
 	          bounds = this.getBounds(currentPos);
-	      if (currentPos === 9) debugger;
+	
 	      if (bounds.bottom === currentPos) {
 	        return null;
 	      }
@@ -536,6 +541,8 @@
 	      var retPos = currentPos - this.height,
 	          bounds = this.getBounds(currentPos);
 	
+	      if (debug) console.log('left called', retPos, arguments, this);
+	
 	      if (bounds.left === currentPos) {
 	        return null;
 	      }
@@ -551,8 +558,10 @@
 	  }, {
 	    key: 'right',
 	    value: function right(currentPos) {
-	      var retPos = currentPos - this.height,
+	      var retPos = currentPos + this.height,
 	          bounds = this.getBounds(currentPos);
+	
+	      if (debug) console.log('right called', retPos, arguments, this);
 	
 	      if (bounds.right === currentPos) {
 	        return null;

@@ -72,8 +72,8 @@ class Grid{
     }else if(this.canSwap(this.currentSelected, gridEl)){
       if(debug)console.log('swap');
       this.currentSelected.swapGems(gridEl);
+      Game.instance.checkForMatch(this.currentSelected, gridEl);
       this.currentSelected = null;
-      Game.instance.checkForMatch(gridEl); //this is not great
     }else{
       if(debug)console.log('illegal move');
       this.currentSelected = null;
@@ -113,7 +113,7 @@ class Grid{
   down(currentPos){
     var retPos = currentPos + 1,
         bounds = this.getBounds(currentPos);
-if(currentPos === 9)debugger;
+
     if(bounds.bottom === currentPos){
       return null;
     }
@@ -129,6 +129,8 @@ if(currentPos === 9)debugger;
     var retPos = currentPos - this.height,
         bounds = this.getBounds(currentPos);
 
+    if(debug)console.log('left called', retPos, arguments, this);
+
     if(bounds.left === currentPos){
       return null;
     }
@@ -141,8 +143,10 @@ if(currentPos === 9)debugger;
   * @return {number} the grid position of the element or null if at the bounds of the grid
   */
   right(currentPos){
-    var retPos = currentPos - this.height,
+    var retPos = currentPos + this.height,
         bounds = this.getBounds(currentPos);
+
+    if(debug)console.log('right called', retPos, arguments, this);
 
     if(bounds.right === currentPos){
       return null;

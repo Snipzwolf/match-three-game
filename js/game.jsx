@@ -30,20 +30,18 @@ class Game {
 
   }
 
-  checkForMatch(startEl){
+  checkForMatch(firstEl, secondEl){
     if(debug)console.log('checkForMatch called', arguments, this);
-    this.getYAxisScore(startEl);
-  }
+    //this.getYAxisScore(startEl);
 
-  getYAxisScore(startEl){
-    var bounds = this.grid.getBounds(startEl.gridPos);
-
-    var getScore = (reverse, matchArr, lastEl) => {
+    var getScore = (funcName, startEl, matchArr, lastEl) => {
       if(debug)console.log('getScore called', arguments, this);
       matchArr = matchArr || [ startEl ];
       lastEl = lastEl || startEl;
 
-      var nextPos = reverse ? this.grid.down(lastEl.gridPos) : this.grid.up(lastEl.gridPos);
+      var nextPos = this.grid[funcName](lastEl.gridPos);
+
+      if(debug)console.log('getScore nextPos', nextPos, nextPos === null);
 
       if(nextPos === null){
         return matchArr;
@@ -53,26 +51,38 @@ class Game {
 
       if(lastEl.gem.isMatch(nextEl.gem)){
         matchArr.push(nextEl);
-        getScore(reverse, matchArr);
+        getScore(funcName, startEl, matchArr, nextEl);
       }
-
 
       return matchArr;
     };
 
-    var up = getScore(false),
-        down = getScore(true);
+    Object.keys(arguments).map((key, idx) => {
+      var xMatches = getScore('left', arguments[key]),
+          yMatches = getScore('up', arguments[key]);
 
-    if((up.length + down.length) > 2){
-      if(debug)console.log('matches found vertical', up, down, arguments, this);
-    }else{
-      if(debug)console.log('np matches found vertical', arguments, this);
-    }
+      getScore('right', arguments[key], xMatches);
+      getScore('down', arguments[key], yMatches);
+
+      if((yMatches.length + xMatches.length) > 2){
+        if(debug)console.log('matches found', xMatches, yMatches);
+
+        if(xMatches.length > 3){
+          //TODO something
+        }
+
+        if(yMatches.length > 3){
+            //TODO something
+        }
+
+      }else{
+        if(debug)console.log('no matches found', arguments, this);
+      }
+    });
+
+
   }
 
-  getXAxisScore(startEl){
-    var bounds = this.grid.getBounds(startEl.gridPos);
-  }
 }
 
 var instance = null;

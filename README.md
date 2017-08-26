@@ -7,7 +7,10 @@ You can use run_containers (requires linux with docker & tmux installed) to star
 Credit for how to move the gems around in a sane way goes to [Emanuele Feronato](http://www.emanueleferonato.com/2016/05/17/match-3-bejeweled-html5-prototype-made-with-phaser/) that i ~~ripped off~~ was inspired by
 
 ## TODO
-make it work :P
+* make it work :P
+* add controls to set width, height, and randomizer seed
+* add scoreboard
+
 
 ## Refactoring & Improvement TODO/Ideas
 
@@ -17,3 +20,6 @@ make it work :P
 
 * Use something like [redux](http://redux.js.org/) or even jquery events to help structure communicating state changes between classes instead of calling class methods directly
   * You couldn't for example reuse the grid classes which could be fairly generic in something else until the refrences to other classes are removed
+
+* Preventing gem matches during the game intialization seems fairly inefficient and could lead to long loops ~~or even a infinite loop~~ while finding a gem that doesn't match
+  * Could just allow matches like some games do but seems lazy

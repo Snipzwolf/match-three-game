@@ -24,12 +24,12 @@ class Gem{
 
   constructor(xPos, yPos, clickCallback){
     this._clickCallback = clickCallback;
-    this._gemType = Game.instance.phaser.rnd.integerInRange(0, gem_prefixs.length-1);
-    this.name = gem_prefixs[ this.gemType ] + '_gem_1';
-    this.sprite = Game.instance.phaser.add.sprite(xPos, yPos, 'gems', this.name);
+    this._getSprite(xPos, yPos);
+  }
 
-    this.sprite.inputEnabled = true;
-    this.sprite.events.onInputDown.add(this.onClick, this);
+  getNewSprite(xPos, yPos){
+    this._destroyCurrentSprite();
+    this._getSprite(xPos, yPos);
   }
 
   isMatch(otherGem){
@@ -47,6 +47,19 @@ class Gem{
 
     this.sprite.x = x;
     this.sprite.y = y;
+  }
+
+  _getSprite(x, y){
+    this._gemType = Game.instance.phaser.rnd.integerInRange(0, gem_prefixs.length-1);
+    this.name = gem_prefixs[ this.gemType ] + '_gem_1';
+    this.sprite = Game.instance.phaser.add.sprite(x, y, 'gems', this.name);
+
+    this.sprite.inputEnabled = true;
+    this.sprite.events.onInputDown.add(this.onClick, this);
+  }
+
+  _destroyCurrentSprite(){
+    this.sprite.destroy();
   }
 }
 

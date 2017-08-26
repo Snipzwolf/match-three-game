@@ -1,5 +1,7 @@
 import Gem from './gem.jsx';
 import Game from './game.jsx';
+import _lang from 'lodash/lang';
+import _util from 'lodash/util';
 import Options from './options.js';
 const debug = Options.debug;
 
@@ -41,6 +43,12 @@ class GridElement{
     this.gem = otherGridEl.gem;
     otherGridEl.gem = oldGem;
   }
+
+  onGemMatch(){
+    if(debug)console.log('onGemMatch called', arguments, this);
+
+    this._gem.getNewSprite(this.xPos, this.yPos);
+  }
 }
 
 class Grid{
@@ -72,12 +80,17 @@ class Grid{
     }else if(this.canSwap(this.currentSelected, gridEl)){
       if(debug)console.log('swap');
       this.currentSelected.swapGems(gridEl);
-      Game.instance.checkForMatch(this.currentSelected, gridEl);
+      Game.instance.checkForMatch(false, this.currentSelected, gridEl);
       this.currentSelected = null;
     }else{
       if(debug)console.log('illegal move');
       this.currentSelected = null;
     }
+  }
+
+  checkGrid(){
+    var allElements = [].concat(...this.grid);
+    Game.instance.checkForMatch(false, ...allElements);
   }
 
   getElementAt(gridPos){
@@ -87,6 +100,10 @@ class Grid{
         yPos = this.getYindex(gridPos);
 
     if(debug)console.log('getElementAt', xPos, yPos);
+
+    if(_lang.isUndefined(this.grid[xPos]) || _lang.isUndefined(this.grid[xPos][yPos])){
+      return null;
+    }
 
     return this.grid[xPos][yPos];
   }
@@ -172,7 +189,8 @@ class Grid{
 
   getXIndex(gridPos){
     if(debug)console.log('getXIndex called', arguments, this);
-    return Math.ceil(gridPos / this.width) - 1;
+
+    return Math.ceil(gridPos / this.height) - 1;
   }
 
   getYindex(gridPos){

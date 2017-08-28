@@ -63,6 +63,14 @@ class Gem{
     //this.sprite.y = y;
   }
 
+  hide(){
+    this.sprite.visible = false;
+  }
+
+  show(){
+    this.sprite.visible = true;
+  }
+
   _getSprite(x, y){
     this._gemType = Game.instance.phaser.rnd.integerInRange(0, gem_prefixs.length-1);
     this.name = gem_prefixs[ this._gemType ] + '_gem_1';

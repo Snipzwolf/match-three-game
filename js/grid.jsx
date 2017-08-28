@@ -23,16 +23,19 @@ class GridElement{
 
   get gem(){ return this._gem; }
   set gem(newGem){
-    this._gem = newGem;
-    this._gem.reposition(this.xPos, this.yPos);
-    this._gem.clickCallback = this.onGemClick.bind(this);
+    if(!_lang.isNull(newGem)){
+      this._gem = newGem;
+      this._gem.reposition(this.xPos, this.yPos);
+      this._gem.clickCallback = this.onGemClick.bind(this);
+    }
   }
 
-  constructor(xPos, yPos, gridPos, gridClickCallback){
+  constructor(xPos, yPos, gridPos, gridClickCallback, parent){
     this.xPos = xPos;
     this.yPos = yPos;
     this._gridPos = gridPos;
     this.gridClickCallback = gridClickCallback;
+    this.parent = parent;
 
     this._gem = new Gem(this.xPos, this.yPos, this.onGemClick.bind(this));
   }
@@ -51,7 +54,24 @@ class GridElement{
   onGemMatch(){
     if(debug)console.log('onGemMatch called', arguments, this);
     //may want to do more on a gem match than get a new gem so put
-    this.getNewGem();
+    var newGem = this.gem;
+    newGem.hide();
+    this.gem = null;
+
+    var nextEl, lastEl = this;
+    do{
+      while((nextEl = this.parent.up(lastEl.gridPos)) !== null){
+        nextEl = this.parent.getElementAt(nextEl);
+        lastEl.swapGems(nextEl);
+      }
+
+      if(nextEl === null){
+        nextEl.gem = newGem;
+        newGem.show();
+        nextEl.getNewGem();
+      }
+
+    }while((lastEl = nextEl) !== null);
   }
 
   getNewGem(){
@@ -77,7 +97,7 @@ class Grid{
         var xPos = ((xIdx + 1) * Gem.width) - Gem.width,
             yPos = ((yIdx + 1) * Gem.height) - Gem.height;
 
-        return new GridElement(xPos, yPos, i++, this.onGridElementClick.bind(this));
+        return new GridElement(xPos, yPos, i++, this.onGridElementClick.bind(this), this);
       });
     });
   }

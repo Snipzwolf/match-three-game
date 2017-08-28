@@ -394,6 +394,16 @@
 	      //this.sprite.y = y;
 	    }
 	  }, {
+	    key: 'hide',
+	    value: function hide() {
+	      this.sprite.visible = false;
+	    }
+	  }, {
+	    key: 'show',
+	    value: function show() {
+	      this.sprite.visible = true;
+	    }
+	  }, {
 	    key: '_getSprite',
 	    value: function _getSprite(x, y) {
 	      this._gemType = _game2.default.instance.phaser.rnd.integerInRange(0, gem_prefixs.length - 1);
@@ -7590,19 +7600,22 @@
 	      return this._gem;
 	    },
 	    set: function set(newGem) {
-	      this._gem = newGem;
-	      this._gem.reposition(this.xPos, this.yPos);
-	      this._gem.clickCallback = this.onGemClick.bind(this);
+	      if (!_lang3.default.isNull(newGem)) {
+	        this._gem = newGem;
+	        this._gem.reposition(this.xPos, this.yPos);
+	        this._gem.clickCallback = this.onGemClick.bind(this);
+	      }
 	    }
 	  }]);
 	
-	  function GridElement(xPos, yPos, gridPos, gridClickCallback) {
+	  function GridElement(xPos, yPos, gridPos, gridClickCallback, parent) {
 	    _classCallCheck(this, GridElement);
 	
 	    this.xPos = xPos;
 	    this.yPos = yPos;
 	    this._gridPos = gridPos;
 	    this.gridClickCallback = gridClickCallback;
+	    this.parent = parent;
 	
 	    this._gem = new _gem2.default(this.xPos, this.yPos, this.onGemClick.bind(this));
 	  }
@@ -7622,10 +7635,27 @@
 	    }
 	  }, {
 	    key: 'onGemMatch',
-	    value: function onGemMatch() {
+	    value: function onGemMatch(verticalMatch) {
 	      if (debug) console.log('onGemMatch called', arguments, this);
 	      //may want to do more on a gem match than get a new gem so put
-	      this.getNewGem();
+	      var newGem = this.gem;
+	      newGem.hide();
+	      this.gem = null;
+	
+	      var nextEl,
+	          lastEl = this;
+	      do {
+	        while ((nextEl = this.parent.up(lastEl.gridPos)) !== null) {
+	          nextEl = this.parent.getElementAt(nextEl);
+	          lastEl.swapGems(nextEl);
+	        }
+	
+	        if (nextEl === null) {
+	          nextEl.gem = newGem;
+	          newGem.show();
+	          nextEl.getNewGem();
+	        }
+	      } while ((lastEl = nextEl) !== null);
 	    }
 	  }, {
 	    key: 'getNewGem',
@@ -7659,7 +7689,7 @@
 	        var xPos = (xIdx + 1) * _gem2.default.width - _gem2.default.width,
 	            yPos = (yIdx + 1) * _gem2.default.height - _gem2.default.height;
 	
-	        return new GridElement(xPos, yPos, i++, _this.onGridElementClick.bind(_this));
+	        return new GridElement(xPos, yPos, i++, _this.onGridElementClick.bind(_this), _this);
 	      });
 	    });
 	  }

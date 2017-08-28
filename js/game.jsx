@@ -8,9 +8,14 @@ const debug = Options.debug && (Options.ignore_debug.game !== true);
 class Game {
   get phaser(){ return this.game; }
 
+  get loaded() { return this._loaded; }
+  set loaded(v) { }
+
   constructor(){
+    this._loaded = false;
     this.grid_size = [15, 9];
     //this.grid_size = [3, 3];
+    //this.grid_size = [5, 4];
     this.grid = null;
     this.game = new Phaser.Game(this.grid_size[0] * Gem.width, this.grid_size[1] * Gem.height, Phaser.AUTO, 'game-canvas', {
       preload: () => this.preload(),
@@ -26,7 +31,9 @@ class Game {
 
   create(){
     this.grid = new Grid(this.grid_size[0], this.grid_size[1])
-    this.grid.checkGrid();
+    this.grid.checkGrid(true);
+    this._loaded = true;
+    console.log(this.grid);
   }
 
   update(){
@@ -35,34 +42,6 @@ class Game {
 
   checkForMatch(setupPhase){
     if(debug)console.log('checkForMatch called', arguments, this);
-    //this.getYAxisScore(startEl);
-
-    var getScore = (funcName, startEl, matchArr, lastEl) => {
-      matchArr = matchArr || [ startEl ];
-      lastEl = lastEl || startEl;
-
-      if(debug)console.log('getScore called', [funcName, startEl, matchArr, lastEl], this);
-
-      var nextPos = this.grid[funcName](lastEl.gridPos);
-
-      if(debug)console.log('getScore nextPos', nextPos, _lang.isNull(nextPos));
-
-      if(_lang.isNull(nextPos)){
-        return matchArr;
-      }
-
-      var nextEl = this.grid.getElementAt(nextPos);
-      if(setupPhase && _lang.isNull(nextEl)){
-        return matchArr;
-      }
-
-      if(lastEl.gem.isMatch(nextEl.gem)){
-        matchArr.push(nextEl);
-        getScore(funcName, startEl, matchArr, nextEl);
-      }
-
-      return matchArr;
-    };
 
     Object.keys(arguments).map((key, idx) => {
       if(debug)console.log('checking next element', idx, arguments[key]);
@@ -70,34 +49,78 @@ class Game {
         return; //skip the first argument
       }
 
-      var xMatches = getScore('left', arguments[key]),
-          yMatches = getScore('up', arguments[key]);
+      var matches = this._getScores(setupPhase, arguments[key]);
 
-      getScore('right', arguments[key], xMatches);
-      getScore('down', arguments[key], yMatches);
-
-      if(xMatches.length >= 3){
-        if(debug)console.log('x matches found', xMatches);
-        if(setupPhase){
-            //TODO regnerate gem and re test, limit regneration attempts
-        }else{
-          xMatches.map((match, idx) => match.onGemMatch());
-        }
+      if(matches.x.length >= 3){
+        if(debug)console.log('x matches found', matches.x);
+        this._onMatches(setupPhase, matches.x);
       }
 
-      if(yMatches.length >= 3){
-        if(debug)console.log('y matches found', yMatches);
-        if(setupPhase){
-          //TODO regnerate gem and re test, limit regneration attempts
-        }else{
-          yMatches.map((match, idx) => match.onGemMatch());
-        }
+      if(matches.y.length >= 3){
+        if(debug)console.log('y matches found', matches.y);
+        this._onMatches(setupPhase, matches.y);
       }
 
-      if((xMatches.length < 3) && (yMatches.length < 3)){
-        if(debug)console.log('no matches found', xMatches, yMatches, arguments, this);
+      if((matches.x.length < 3) && (matches.y.length < 3)){
+        if(debug)console.log('no matches found', matches.x, matches.y, arguments, this);
       }
     });
+  }
+
+  _getScores(setupPhase, element){
+    var ret = {};
+
+    ret['x'] = this._getScore(setupPhase, 'left', element);
+    ret['y'] = this._getScore(setupPhase, 'up', element);
+
+    this._getScore(setupPhase, 'right', element, ret['x']);
+    this._getScore(setupPhase, 'down', element, ret['y']);
+
+    return ret;
+  }
+
+  _getScore(setupPhase, funcName, startEl, matchArr, lastEl){
+    matchArr = matchArr || [ startEl ];
+    lastEl = lastEl || startEl;
+
+    if(debug)console.log('getScore called', [funcName, startEl, matchArr, lastEl], this);
+
+    var nextPos = this.grid[funcName](lastEl.gridPos);
+
+    if(debug)console.log('getScore nextPos', nextPos, _lang.isNull(nextPos));
+
+    if(_lang.isNull(nextPos)){
+      return matchArr;
+    }
+
+    var nextEl = this.grid.getElementAt(nextPos);
+    if(setupPhase && _lang.isNull(nextEl)){
+      return matchArr;
+    }
+
+    if(lastEl.gem.isMatch(nextEl.gem)){
+      matchArr.push(nextEl);
+      this._getScore(setupPhase, funcName, startEl, matchArr, nextEl);
+    }
+
+    return matchArr;
+  }
+
+  _onMatches(setupPhase, matches){
+    if(setupPhase){
+        var i = 1;
+        while(i++ <= 6){
+          while(true){
+            matches[0].reloaded = true;
+            matches[0].getNewGem();
+            if(!matches[0].gem.isMatch(matches[1].gem)){
+              break;
+            }
+          }
+        }
+    }else{
+      matches.map((match, idx) => match.onGemMatch());
+    }
   }
 
 }

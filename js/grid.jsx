@@ -17,6 +17,10 @@ const debug = Options.debug;
 class GridElement{
   get gridPos(){ return this._gridPos; }
   set gridPos(v){ return; } //dont want this settable externally
+
+  get gemPos() { return { x : this.xPos, y : this.yPos }; }
+  set gemPos(v){ return; }
+
   get gem(){ return this._gem; }
   set gem(newGem){
     this._gem = newGem;
@@ -30,7 +34,7 @@ class GridElement{
     this._gridPos = gridPos;
     this.gridClickCallback = gridClickCallback;
 
-    this.gem = new Gem(this.xPos, this.yPos, this.onGemClick.bind(this));
+    this._gem = new Gem(this.xPos, this.yPos, this.onGemClick.bind(this));
   }
 
   onGemClick(sprite, ptr){
@@ -46,6 +50,16 @@ class GridElement{
 
   onGemMatch(){
     if(debug)console.log('onGemMatch called', arguments, this);
+    //may want to do more on a gem match than get a new gem so put
+    this.getNewGem();
+  }
+
+  getNewGem(){
+    if(debug)console.log('getNewGem called', arguments, this);
+
+    if(Game.instance.loaded){
+      debugger;
+    }
 
     this._gem.getNewSprite(this.xPos, this.yPos);
   }
@@ -88,9 +102,9 @@ class Grid{
     }
   }
 
-  checkGrid(){
+  checkGrid(setupPhase){
     var allElements = [].concat(...this.grid);
-    Game.instance.checkForMatch(false, ...allElements);
+    Game.instance.checkForMatch((_lang.isUndefined(setupPhase) ? false : setupPhase), ...allElements);
   }
 
   getElementAt(gridPos){

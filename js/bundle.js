@@ -196,13 +196,13 @@
 	    }
 	  }, {
 	    key: '_getScore',
-	    value: function _getScore(setupPhase, funcName, startEl, matchArr, lastEl) {
+	    value: function _getScore(setupPhase, direction, startEl, matchArr, lastEl) {
 	      matchArr = matchArr || [startEl];
 	      lastEl = lastEl || startEl;
 	
-	      if (debug) console.log('getScore called', [funcName, startEl, matchArr, lastEl], this);
+	      if (debug) console.log('getScore called', [direction, startEl, matchArr, lastEl], this);
 	
-	      var nextPos = this.grid[funcName](lastEl.gridPos);
+	      var nextPos = lastEl.neighbours[direction];
 	
 	      if (debug) console.log('getScore nextPos', nextPos, _lang3.default.isNull(nextPos));
 	
@@ -217,7 +217,7 @@
 	
 	      if (lastEl.gem.isMatch(nextEl.gem)) {
 	        matchArr.push(nextEl);
-	        this._getScore(setupPhase, funcName, startEl, matchArr, nextEl);
+	        this._getScore(setupPhase, direction, startEl, matchArr, nextEl);
 	      }
 	
 	      return matchArr;
@@ -404,6 +404,23 @@
 	      this.sprite.visible = true;
 	    }
 	  }, {
+	    key: 'setDebugInfo',
+	    value: function setDebugInfo(gridPos, neighbours) {
+	      if (debug) {
+	        var style = { fontSize: 20, fontVariant: 'Arial', fontWeight: "bold", fill: "#000000", wordWrap: false, wordWrapWidth: gem_size.w - 10, 'align': 'center', 'boundsAlignH': 'center' };
+	
+	        var posText = this.name.replace(new RegExp('_.+$', 'i'), '');
+	        posText += '\n' + _lang3.default.toString(neighbours.up);
+	        posText += '\n' + _lang3.default.toString(neighbours.left) + ' | ' + _lang3.default.toString(gridPos) + ' | ' + _lang3.default.toString(neighbours.right);
+	        posText += '\n' + _lang3.default.toString(neighbours.down);
+	
+	        var label = _game2.default.instance.phaser.add.text(5, 5, posText, style);
+	        label.width = gem_size.w - 10;
+	        label.height = gem_size.h;
+	        this.sprite.addChild(label);
+	      }
+	    }
+	  }, {
 	    key: '_getSprite',
 	    value: function _getSprite(x, y) {
 	      this._gemType = _game2.default.instance.phaser.rnd.integerInRange(0, gem_prefixs.length - 1);
@@ -412,13 +429,6 @@
 	
 	      this.sprite.inputEnabled = true;
 	      this.sprite.events.onInputDown.add(this.onClick, this);
-	
-	      if (debug) {
-	        var style = { font: "12px Arial", fill: "#000000", wordWrap: true, wordWrapWidth: gem_size.w, 'align': 'center', 'boundsAlignH': 'center' };
-	        this.label = _game2.default.instance.phaser.add.text(0, 20, this.name.replace(new RegExp('_.+$', 'i'), ''), style);
-	        this.label.width = gem_size.w;
-	        this.sprite.addChild(this.label);
-	      }
 	    }
 	  }, {
 	    key: '_destroyCurrentSprite',
@@ -7584,12 +7594,19 @@
 	    },
 	    set: function set(v) {
 	      return;
-	    } //dont want this settable externally
-	
+	    }
 	  }, {
 	    key: 'gemPos',
 	    get: function get() {
 	      return { x: this.xPos, y: this.yPos };
+	    },
+	    set: function set(v) {
+	      return;
+	    }
+	  }, {
+	    key: 'neighbours',
+	    get: function get() {
+	      return this._neighbours;
 	    },
 	    set: function set(v) {
 	      return;
@@ -7604,6 +7621,7 @@
 	        this._gem = newGem;
 	        this._gem.reposition(this.xPos, this.yPos);
 	        this._gem.clickCallback = this.onGemClick.bind(this);
+	        this._gem.setDebugInfo(this.gridPos, this.neighbours);
 	      }
 	    }
 	  }]);
@@ -7618,6 +7636,16 @@
 	    this.parent = parent;
 	
 	    this._gem = new _gem2.default(this.xPos, this.yPos, this.onGemClick.bind(this));
+	    this._neighbours = {
+	      'up': this.parent._up(this._gridPos),
+	      'down': this.parent._down(this._gridPos),
+	      'left': this.parent._left(this._gridPos),
+	      'right': this.parent._right(this._gridPos)
+	    };
+	
+	    this._gem.setDebugInfo(this.gridPos, this.neighbours);
+	
+	    this._neighbours = Object.freeze(this._neighbours);
 	  }
 	
 	  _createClass(GridElement, [{
@@ -7635,7 +7663,7 @@
 	    }
 	  }, {
 	    key: 'onGemMatch',
-	    value: function onGemMatch(verticalMatch) {
+	    value: function onGemMatch() {
 	      if (debug) console.log('onGemMatch called', arguments, this);
 	      //may want to do more on a gem match than get a new gem so put
 	      var newGem = this.gem;
@@ -7645,7 +7673,7 @@
 	      var nextEl,
 	          lastEl = this;
 	      do {
-	        while ((nextEl = this.parent.up(lastEl.gridPos)) !== null) {
+	        while ((nextEl = lastEl._neighbours.up) !== null) {
 	          nextEl = this.parent.getElementAt(nextEl);
 	          lastEl.swapGems(nextEl);
 	        }
@@ -7682,16 +7710,26 @@
 	    this.currentSelected = null;
 	    this.width = x;
 	    this.height = y;
+	    this.useGridDict = false;
+	    this.gridDict = {};
 	
 	    var i = 1;
+	    var selfObj = this;
 	    this.grid = Array(x).fill().map(function (xVal, xIdx, xArr) {
 	      return Array(y).fill().map(function (yVal, yIdx, yArr) {
 	        var xPos = (xIdx + 1) * _gem2.default.width - _gem2.default.width,
-	            yPos = (yIdx + 1) * _gem2.default.height - _gem2.default.height;
+	            yPos = (yIdx + 1) * _gem2.default.height - _gem2.default.height,
+	            currentPos = i++;
 	
-	        return new GridElement(xPos, yPos, i++, _this.onGridElementClick.bind(_this), _this);
+	        return new GridElement(xPos, yPos, currentPos, _this.onGridElementClick.bind(_this), _this);
 	      });
 	    });
+	
+	    for (var idx = 1; idx <= i; idx++) {
+	      this.gridDict[idx] = this.getElementAt(idx);
+	    }
+	
+	    this.useGridDict = true;
 	  }
 	
 	  _createClass(Grid, [{
@@ -7730,8 +7768,12 @@
 	    value: function getElementAt(gridPos) {
 	      if (debug) console.log('getElementAt called', arguments, this);
 	
-	      var xPos = this.getXIndex(gridPos),
-	          yPos = this.getYindex(gridPos);
+	      if (this.useGridDict) {
+	        return this.gridDict[gridPos];
+	      }
+	
+	      var xPos = this._getXIndex(gridPos),
+	          yPos = this._getYIndex(gridPos);
 	
 	      if (debug) console.log('getElementAt', xPos, yPos);
 	
@@ -7741,6 +7783,13 @@
 	
 	      return this.grid[xPos][yPos];
 	    }
+	  }, {
+	    key: 'canSwap',
+	    value: function canSwap(gridEl, otherGridEl) {
+	      if (debug) console.log('onGridElementClick canSwap', arguments, this, gridEl.gridPos, otherGridEl.gridPos);
+	
+	      return gridEl.gridPos + this.height === otherGridEl.gridPos || gridEl.gridPos - this.height === otherGridEl.gridPos || gridEl.gridPos + 1 === otherGridEl.gridPos || gridEl.gridPos - 1 === otherGridEl.gridPos;
+	    }
 	
 	    /*
 	    * Get the grid element position above the current position
@@ -7748,10 +7797,10 @@
 	    */
 	
 	  }, {
-	    key: 'up',
-	    value: function up(currentPos) {
+	    key: '_up',
+	    value: function _up(currentPos) {
 	      var retPos = currentPos - 1,
-	          bounds = this.getBounds(currentPos);
+	          bounds = this._getBounds(currentPos);
 	
 	      if (bounds.top === currentPos) {
 	        return null;
@@ -7766,10 +7815,10 @@
 	    */
 	
 	  }, {
-	    key: 'down',
-	    value: function down(currentPos) {
+	    key: '_down',
+	    value: function _down(currentPos) {
 	      var retPos = currentPos + 1,
-	          bounds = this.getBounds(currentPos);
+	          bounds = this._getBounds(currentPos);
 	
 	      if (bounds.bottom === currentPos) {
 	        return null;
@@ -7784,10 +7833,10 @@
 	    */
 	
 	  }, {
-	    key: 'left',
-	    value: function left(currentPos) {
+	    key: '_left',
+	    value: function _left(currentPos) {
 	      var retPos = currentPos - this.height,
-	          bounds = this.getBounds(currentPos);
+	          bounds = this._getBounds(currentPos);
 	
 	      if (debug) console.log('left called', retPos, arguments, this);
 	
@@ -7804,10 +7853,10 @@
 	    */
 	
 	  }, {
-	    key: 'right',
-	    value: function right(currentPos) {
+	    key: '_right',
+	    value: function _right(currentPos) {
 	      var retPos = currentPos + this.height,
-	          bounds = this.getBounds(currentPos);
+	          bounds = this._getBounds(currentPos);
 	
 	      if (debug) console.log('right called', retPos, arguments, this);
 	
@@ -7818,12 +7867,12 @@
 	      return retPos;
 	    }
 	  }, {
-	    key: 'getBounds',
-	    value: function getBounds(gridPos) {
+	    key: '_getBounds',
+	    value: function _getBounds(gridPos) {
 	      var _this2 = this;
 	
-	      var currentX = this.getXIndex(gridPos),
-	          currentY = this.getYindex(gridPos),
+	      var currentX = this._getXIndex(gridPos),
+	          currentY = this._getYIndex(gridPos),
 	          ret = { //FIXME this might be better breaking across lines as there is brackets and arrows everywhere :S
 	        'top': gridPos - currentY,
 	        'bottom': gridPos + (this.height - (currentY + 1)),
@@ -7835,34 +7884,27 @@
 	        }(gridPos + this.height)
 	      };
 	
-	      if (debug) console.log('getBounds called', ret, arguments, this);
+	      if (debug) console.log('_getBounds called', ret, arguments, this);
 	
 	      return ret;
 	    }
 	  }, {
-	    key: 'getXIndex',
-	    value: function getXIndex(gridPos) {
-	      if (debug) console.log('getXIndex called', arguments, this);
+	    key: '_getXIndex',
+	    value: function _getXIndex(gridPos) {
+	      if (debug) console.log('_getXIndex called', arguments, this);
 	
 	      return Math.ceil(gridPos / this.height) - 1;
 	    }
 	  }, {
-	    key: 'getYindex',
-	    value: function getYindex(gridPos) {
+	    key: '_getYIndex',
+	    value: function _getYIndex(gridPos) {
 	      var _this3 = this;
 	
-	      if (debug) console.log('getYindex called', arguments, this);
+	      if (debug) console.log('_getYindex called', arguments, this);
 	
 	      return function (pos) {
 	        return pos || _this3.height;
 	      }(gridPos % this.height) - 1;
-	    }
-	  }, {
-	    key: 'canSwap',
-	    value: function canSwap(gridEl, otherGridEl) {
-	      if (debug) console.log('onGridElementClick canSwap', arguments, this, gridEl.gridPos, otherGridEl.gridPos);
-	
-	      return gridEl.gridPos + this.height === otherGridEl.gridPos || gridEl.gridPos - this.height === otherGridEl.gridPos || gridEl.gridPos + 1 === otherGridEl.gridPos || gridEl.gridPos - 1 === otherGridEl.gridPos;
 	    }
 	  }]);
 	

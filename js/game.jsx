@@ -79,13 +79,13 @@ class Game {
     return ret;
   }
 
-  _getScore(setupPhase, funcName, startEl, matchArr, lastEl){
+  _getScore(setupPhase, direction, startEl, matchArr, lastEl){
     matchArr = matchArr || [ startEl ];
     lastEl = lastEl || startEl;
 
-    if(debug)console.log('getScore called', [funcName, startEl, matchArr, lastEl], this);
+    if(debug)console.log('getScore called', [direction, startEl, matchArr, lastEl], this);
 
-    var nextPos = this.grid[funcName](lastEl.gridPos);
+    var nextPos = lastEl.neighbours[direction];
 
     if(debug)console.log('getScore nextPos', nextPos, _lang.isNull(nextPos));
 
@@ -100,7 +100,7 @@ class Game {
 
     if(lastEl.gem.isMatch(nextEl.gem)){
       matchArr.push(nextEl);
-      this._getScore(setupPhase, funcName, startEl, matchArr, nextEl);
+      this._getScore(setupPhase, direction, startEl, matchArr, nextEl);
     }
 
     return matchArr;

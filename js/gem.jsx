@@ -71,6 +71,22 @@ class Gem{
     this.sprite.visible = true;
   }
 
+  setDebugInfo(gridPos, neighbours){
+    if(debug){
+      var style = { fontSize: 20, fontVariant: 'Arial', fontWeight: "bold", fill: "#000000", wordWrap: false, wordWrapWidth: gem_size.w - 10, 'align': 'center', 'boundsAlignH': 'center' };
+
+      var posText = this.name.replace(new RegExp('_.+$', 'i'), '');
+      posText += '\n' + _lang.toString(neighbours.up);
+      posText += '\n' + _lang.toString(neighbours.left) + ' | ' + _lang.toString(gridPos) + ' | ' + _lang.toString(neighbours.right);
+      posText += '\n' + _lang.toString(neighbours.down);
+
+      var label = Game.instance.phaser.add.text(5, 5, posText, style);
+      label.width = gem_size.w - 10;
+      label.height = gem_size.h;
+      this.sprite.addChild(label);
+    }
+  }
+
   _getSprite(x, y){
     this._gemType = Game.instance.phaser.rnd.integerInRange(0, gem_prefixs.length-1);
     this.name = gem_prefixs[ this._gemType ] + '_gem_1';
@@ -78,13 +94,6 @@ class Gem{
 
     this.sprite.inputEnabled = true;
     this.sprite.events.onInputDown.add(this.onClick, this);
-
-    if(debug){
-      var style = { font: "12px Arial", fill: "#000000", wordWrap: true, wordWrapWidth: gem_size.w, 'align': 'center', 'boundsAlignH': 'center' };
-      this.label = Game.instance.phaser.add.text(0, 20, this.name.replace(new RegExp('_.+$', 'i'), ''), style);
-      this.label.width = gem_size.w;
-      this.sprite.addChild(this.label);
-    }
   }
 
   _destroyCurrentSprite(){

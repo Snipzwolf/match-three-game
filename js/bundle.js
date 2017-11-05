@@ -7549,13 +7549,17 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
+	var _game = __webpack_require__(/*! ./game.jsx */ 1);
+	
+	var _game2 = _interopRequireDefault(_game);
+	
 	var _gem = __webpack_require__(/*! ./gem.jsx */ 2);
 	
 	var _gem2 = _interopRequireDefault(_gem);
 	
-	var _game = __webpack_require__(/*! ./game.jsx */ 1);
+	var _gridElement = __webpack_require__(/*! ./gridElement.jsx */ 304);
 	
-	var _game2 = _interopRequireDefault(_game);
+	var _gridElement2 = _interopRequireDefault(_gridElement);
 	
 	var _lang2 = __webpack_require__(/*! lodash/lang */ 4);
 	
@@ -7586,122 +7590,6 @@
 	  ----
 	*/
 	
-	var GridElement = function () {
-	  _createClass(GridElement, [{
-	    key: 'gridPos',
-	    get: function get() {
-	      return this._gridPos;
-	    },
-	    set: function set(v) {
-	      return;
-	    }
-	  }, {
-	    key: 'gemPos',
-	    get: function get() {
-	      return { x: this.xPos, y: this.yPos };
-	    },
-	    set: function set(v) {
-	      return;
-	    }
-	  }, {
-	    key: 'neighbours',
-	    get: function get() {
-	      return this._neighbours;
-	    },
-	    set: function set(v) {
-	      return;
-	    }
-	  }, {
-	    key: 'gem',
-	    get: function get() {
-	      return this._gem;
-	    },
-	    set: function set(newGem) {
-	      if (!_lang3.default.isNull(newGem)) {
-	        this._gem = newGem;
-	        this._gem.reposition(this.xPos, this.yPos);
-	        this._gem.clickCallback = this.onGemClick.bind(this);
-	        this._gem.setDebugInfo(this.gridPos, this.neighbours);
-	      }
-	    }
-	  }]);
-	
-	  function GridElement(xPos, yPos, gridPos, gridClickCallback, parent) {
-	    _classCallCheck(this, GridElement);
-	
-	    this.xPos = xPos;
-	    this.yPos = yPos;
-	    this._gridPos = gridPos;
-	    this.gridClickCallback = gridClickCallback;
-	    this.parent = parent;
-	
-	    this._gem = new _gem2.default(this.xPos, this.yPos, this.onGemClick.bind(this));
-	    this._neighbours = {
-	      'up': this.parent._up(this._gridPos),
-	      'down': this.parent._down(this._gridPos),
-	      'left': this.parent._left(this._gridPos),
-	      'right': this.parent._right(this._gridPos)
-	    };
-	
-	    this._gem.setDebugInfo(this.gridPos, this.neighbours);
-	
-	    this._neighbours = Object.freeze(this._neighbours);
-	  }
-	
-	  _createClass(GridElement, [{
-	    key: 'onGemClick',
-	    value: function onGemClick(sprite, ptr) {
-	      if (debug) console.log('onGemClick called', arguments, this);
-	      this.gridClickCallback.apply(this, Array.prototype.slice.call(arguments).concat([this]));
-	    }
-	  }, {
-	    key: 'swapGems',
-	    value: function swapGems(otherGridEl) {
-	      var oldGem = this.gem;
-	      this.gem = otherGridEl.gem;
-	      otherGridEl.gem = oldGem;
-	    }
-	  }, {
-	    key: 'onGemMatch',
-	    value: function onGemMatch() {
-	      if (debug) console.log('onGemMatch called', arguments, this);
-	      //may want to do more on a gem match than get a new gem so put
-	      var newGem = this.gem;
-	      newGem.hide();
-	      this.gem = null;
-	
-	      var nextEl,
-	          lastEl = this;
-	      do {
-	        while ((nextEl = lastEl._neighbours.up) !== null) {
-	          nextEl = this.parent.getElementAt(nextEl);
-	          nextEl.swapGems(lastEl);
-	          lastEl = nextEl;
-	        }
-	
-	        if (lastEl.gem === null) {
-	          lastEl.gem = newGem;
-	          lastEl.show();
-	          lastEl.getNewGem();
-	        }
-	      } while ((lastEl = nextEl) !== null);
-	    }
-	  }, {
-	    key: 'getNewGem',
-	    value: function getNewGem() {
-	      if (debug) console.log('getNewGem called', arguments, this);
-	
-	      if (_game2.default.instance.loaded) {
-	        debugger;
-	      }
-	
-	      this._gem.getNewSprite(this.xPos, this.yPos);
-	    }
-	  }]);
-	
-	  return GridElement;
-	}();
-	
 	var Grid = function () {
 	  function Grid(x, y) {
 	    var _this = this;
@@ -7722,7 +7610,7 @@
 	            yPos = (yIdx + 1) * _gem2.default.height - _gem2.default.height,
 	            currentPos = i++;
 	
-	        return new GridElement(xPos, yPos, currentPos, _this.onGridElementClick.bind(_this), _this);
+	        return new _gridElement2.default(xPos, yPos, currentPos, _this.onGridElementClick.bind(_this), _this);
 	      });
 	    });
 	
@@ -12317,6 +12205,157 @@
 	
 	module.exports = uniqueId;
 
+
+/***/ }),
+/* 304 */
+/*!****************************!*\
+  !*** ./js/gridElement.jsx ***!
+  \****************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _gem = __webpack_require__(/*! ./gem.jsx */ 2);
+	
+	var _gem2 = _interopRequireDefault(_gem);
+	
+	var _lang2 = __webpack_require__(/*! lodash/lang */ 4);
+	
+	var _lang3 = _interopRequireDefault(_lang2);
+	
+	var _options = __webpack_require__(/*! ./options.js */ 3);
+	
+	var _options2 = _interopRequireDefault(_options);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var debug = _options2.default.debug;
+	
+	var GridElement = function () {
+	  _createClass(GridElement, [{
+	    key: 'gridPos',
+	    get: function get() {
+	      return this._gridPos;
+	    },
+	    set: function set(v) {
+	      return;
+	    }
+	  }, {
+	    key: 'gemPos',
+	    get: function get() {
+	      return { x: this.xPos, y: this.yPos };
+	    },
+	    set: function set(v) {
+	      return;
+	    }
+	  }, {
+	    key: 'neighbours',
+	    get: function get() {
+	      return this._neighbours;
+	    },
+	    set: function set(v) {
+	      return;
+	    }
+	  }, {
+	    key: 'gem',
+	    get: function get() {
+	      return this._gem;
+	    },
+	    set: function set(newGem) {
+	      if (!_lang3.default.isNull(newGem)) {
+	        this._gem = newGem;
+	        this._gem.reposition(this.xPos, this.yPos);
+	        this._gem.clickCallback = this.onGemClick.bind(this);
+	        this._gem.setDebugInfo(this.gridPos, this.neighbours);
+	      }
+	    }
+	  }]);
+	
+	  function GridElement(xPos, yPos, gridPos, gridClickCallback, parent) {
+	    _classCallCheck(this, GridElement);
+	
+	    this.xPos = xPos;
+	    this.yPos = yPos;
+	    this._gridPos = gridPos;
+	    this.gridClickCallback = gridClickCallback;
+	    this.parent = parent;
+	
+	    this._gem = new _gem2.default(this.xPos, this.yPos, this.onGemClick.bind(this));
+	    this._neighbours = {
+	      'up': this.parent._up(this._gridPos),
+	      'down': this.parent._down(this._gridPos),
+	      'left': this.parent._left(this._gridPos),
+	      'right': this.parent._right(this._gridPos)
+	    };
+	
+	    this._gem.setDebugInfo(this.gridPos, this.neighbours);
+	
+	    this._neighbours = Object.freeze(this._neighbours);
+	  }
+	
+	  _createClass(GridElement, [{
+	    key: 'onGemClick',
+	    value: function onGemClick(sprite, ptr) {
+	      if (debug) console.log('onGemClick called', arguments, this);
+	      this.gridClickCallback.apply(this, Array.prototype.slice.call(arguments).concat([this]));
+	    }
+	  }, {
+	    key: 'swapGems',
+	    value: function swapGems(otherGridEl) {
+	      var oldGem = this.gem;
+	      this.gem = otherGridEl.gem;
+	      otherGridEl.gem = oldGem;
+	    }
+	  }, {
+	    key: 'onGemMatch',
+	    value: function onGemMatch() {
+	      if (debug) console.log('onGemMatch called', arguments, this);
+	      //may want to do more on a gem match than get a new gem so put
+	      var newGem = this.gem;
+	      newGem.hide();
+	      this.gem = null;
+	
+	      var nextEl,
+	          lastEl = this;
+	      do {
+	        while ((nextEl = lastEl._neighbours.up) !== null) {
+	          nextEl = this.parent.getElementAt(nextEl);
+	          nextEl.swapGems(lastEl);
+	          lastEl = nextEl;
+	        }
+	
+	        if (lastEl.gem === null) {
+	          lastEl.gem = newGem;
+	          lastEl.show();
+	          lastEl.getNewGem();
+	        }
+	      } while ((lastEl = nextEl) !== null);
+	    }
+	  }, {
+	    key: 'getNewGem',
+	    value: function getNewGem() {
+	      if (debug) console.log('getNewGem called', arguments, this);
+	
+	      if (Game.instance.loaded) {
+	        debugger;
+	      }
+	
+	      this._gem.getNewSprite(this.xPos, this.yPos);
+	    }
+	  }]);
+	
+	  return GridElement;
+	}();
+	
+	exports.default = GridElement;
 
 /***/ })
 /******/ ]);

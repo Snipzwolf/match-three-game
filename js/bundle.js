@@ -118,7 +118,7 @@
 	    this._loaded = false;
 	    this.grid_size = [15, 9];
 	    //this.grid_size = [3, 3];
-	    //this.grid_size = [5, 4];
+	    this.grid_size = [5, 4];
 	    this.grid = null;
 	    this.game = new Phaser.Game(this.grid_size[0] * _gem2.default.width, this.grid_size[1] * _gem2.default.height, Phaser.AUTO, 'game-canvas', {
 	      preload: function preload() {
@@ -7675,13 +7675,14 @@
 	      do {
 	        while ((nextEl = lastEl._neighbours.up) !== null) {
 	          nextEl = this.parent.getElementAt(nextEl);
-	          lastEl.swapGems(nextEl);
+	          nextEl.swapGems(lastEl);
+	          lastEl = nextEl;
 	        }
 	
-	        if (nextEl === null) {
-	          nextEl.gem = newGem;
-	          newGem.show();
-	          nextEl.getNewGem();
+	        if (lastEl.gem === null) {
+	          lastEl.gem = newGem;
+	          lastEl.show();
+	          lastEl.getNewGem();
 	        }
 	      } while ((lastEl = nextEl) !== null);
 	    }

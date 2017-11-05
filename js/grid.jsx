@@ -76,13 +76,14 @@ class GridElement{
     do{
       while((nextEl = lastEl._neighbours.up) !== null){
         nextEl = this.parent.getElementAt(nextEl);
-        lastEl.swapGems(nextEl);
+        nextEl.swapGems(lastEl);
+        lastEl = nextEl;
       }
 
-      if(nextEl === null){
-        nextEl.gem = newGem;
-        newGem.show();
-        nextEl.getNewGem();
+      if(lastEl.gem === null){
+        lastEl.gem = newGem;
+        lastEl.show();
+        lastEl.getNewGem();
       }
 
     }while((lastEl = nextEl) !== null);

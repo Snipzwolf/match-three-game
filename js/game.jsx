@@ -15,7 +15,7 @@ class Game {
     this._loaded = false;
     this.grid_size = [15, 9];
     //this.grid_size = [3, 3];
-    //this.grid_size = [5, 4];
+    this.grid_size = [5, 4];
     this.grid = null;
     this.game = new Phaser.Game(this.grid_size[0] * Gem.width, this.grid_size[1] * Gem.height, Phaser.AUTO, 'game-canvas', {
       preload: () => this.preload(),

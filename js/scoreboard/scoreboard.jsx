@@ -4,8 +4,7 @@ import moment from 'moment';
 
 class Scoreboard extends React.Component{
     static propTypes = {
-      score: React.PropTypes.number,
-      action: React.PropTypes.func
+      score: React.PropTypes.number
     }
 
     static defaultProps = {
@@ -24,8 +23,16 @@ class Scoreboard extends React.Component{
         this.timeInterval = setInterval(() => {
           this.setState({
             playtime: Date.now() - this.props.startedAt.getTime()
-          })
+          });
         }, 1000);
+
+        window._updateScore = this.setScore.bind(this); //total hack as i can think of a better way... yet?
+    }
+
+    setScore(score){
+      this.setState({
+        score: score
+      });
     }
 
     render(){

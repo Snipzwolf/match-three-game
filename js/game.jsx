@@ -61,11 +61,13 @@ class Game {
       if(matches.x.length >= 3){
         if(debug)console.log('x matches found', matches.x);
         this._onMatches(setupPhase, matches.x);
+        this._addToPlayerScore(matches.x.length);
       }
 
       if(matches.y.length >= 3){
         if(debug)console.log('y matches found', matches.y);
         this._onMatches(setupPhase, matches.y);
+        this._addToPlayerScore(matches.y.length);
       }
 
       if((matches.x.length < 3) && (matches.y.length < 3)){
@@ -75,7 +77,10 @@ class Game {
   }
 
   _addToPlayerScore(score){
-    this.playerScore =+ score;
+    if(this._loaded){
+      this.playerScore += score;
+      window._updateScore(this.playerScore);
+    }
   }
 
   _getScores(setupPhase, element){

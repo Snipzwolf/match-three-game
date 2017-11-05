@@ -179,11 +179,13 @@
 	        if (matches.x.length >= 3) {
 	          if (debug) console.log('x matches found', matches.x);
 	          _this2._onMatches(setupPhase, matches.x);
+	          _this2._addToPlayerScore(matches.x.length);
 	        }
 	
 	        if (matches.y.length >= 3) {
 	          if (debug) console.log('y matches found', matches.y);
 	          _this2._onMatches(setupPhase, matches.y);
+	          _this2._addToPlayerScore(matches.y.length);
 	        }
 	
 	        if (matches.x.length < 3 && matches.y.length < 3) {
@@ -194,7 +196,10 @@
 	  }, {
 	    key: '_addToPlayerScore',
 	    value: function _addToPlayerScore(score) {
-	      this.playerScore = +score;
+	      if (this._loaded) {
+	        this.playerScore += score;
+	        window._updateScore(this.playerScore);
+	      }
 	    }
 	  }, {
 	    key: '_getScores',
@@ -470,7 +475,7 @@
 	  value: true
 	});
 	exports.default = Object.freeze({
-	  debug: true,
+	  debug: false,
 	  swapSpeed: 200,
 	  ignore_debug: {
 	    gem: false,
@@ -12424,10 +12429,19 @@
 	        playtime: Date.now() - _this.props.startedAt.getTime()
 	      });
 	    }, 1000);
+	
+	    window._updateScore = _this.setScore.bind(_this); //total hack as i can think of a better way... yet?
 	    return _this;
 	  }
 	
 	  _createClass(Scoreboard, [{
+	    key: 'setScore',
+	    value: function setScore(score) {
+	      this.setState({
+	        score: score
+	      });
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      return _react2.default.createElement(
@@ -12461,8 +12475,7 @@
 	}(_react2.default.Component);
 	
 	Scoreboard.propTypes = {
-	  score: _react2.default.PropTypes.number,
-	  action: _react2.default.PropTypes.func
+	  score: _react2.default.PropTypes.number
 	};
 	Scoreboard.defaultProps = {
 	  startedAt: new Date(),

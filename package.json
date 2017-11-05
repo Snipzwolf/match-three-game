@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "babel-plugin-lodash": "^3.2.11",
+    "babel-plugin-transform-class-properties": "^6.24.1",
     "css-loader": "^0.26.1",
     "gulp": "^3.9.1",
     "gulp-autoprefixer": "^3.1.1",
@@ -27,10 +28,14 @@
     "gulp-shell": "^0.5.2",
     "image-webpack-loader": "^3.1.0",
     "lodash-webpack-plugin": "^0.11.4",
+    "moment": "^2.19.1",
     "style-loader": "^0.13.1"
   },
   "babel": {
-    "plugins": ["lodash"],
+    "plugins": [
+      "lodash",
+      "transform-class-properties"
+    ],
     "presets": [
       "es2015",
       "react"

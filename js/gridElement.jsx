@@ -81,10 +81,6 @@ class GridElement{
   getNewGem(){
     if(debug)console.log('getNewGem called', arguments, this);
 
-    if(Game.instance.loaded){
-      debugger;
-    }
-
     this._gem.getNewSprite(this.xPos, this.yPos);
   }
 }

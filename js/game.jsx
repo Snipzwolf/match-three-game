@@ -1,3 +1,4 @@
+import Scoreboard from './scoreboard/scoreboard.jsx';
 import Gem from './gem.jsx';
 import Grid from './grid.jsx';
 import Options from './options.js';
@@ -17,12 +18,15 @@ class Game {
     //this.grid_size = [3, 3];
     this.grid_size = [5, 4];
     this.grid = null;
+    this.scoreboard = Scoreboard.instance;
     this.game = new Phaser.Game(this.grid_size[0] * Gem.width, this.grid_size[1] * Gem.height, Phaser.AUTO, 'game-canvas', {
       preload: () => this.preload(),
       create: () => this.create(),
       update: () => this.update(),
       enableDebug: false
     });
+
+    this.playerScore = 0;
   }
 
   preload(){
@@ -70,6 +74,10 @@ class Game {
     });
   }
 
+  _addToPlayerScore(score){
+    this.playerScore =+ score;
+  }
+
   _getScores(setupPhase, element){
     var ret = {};
 
@@ -114,7 +122,6 @@ class Game {
         var i = 1;
         while(i++ <= 6){
           while(true){
-            matches[0].reloaded = true;
             matches[0].getNewGem();
             if(!matches[0].gem.isMatch(matches[1].gem)){
               break;
@@ -133,6 +140,7 @@ class GameSingleton{
   static get instance(){
     if(!instance){
       instance = new Game();
+      window.debug_game = instance;
     }
 
     return instance;

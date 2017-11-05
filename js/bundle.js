@@ -142,6 +142,9 @@
 	  }, {
 	    key: 'create',
 	    value: function create() {
+	      console.log('rnd state is ', this.game.rnd.state());
+	      //this.game.rnd.state('!rnd,1,0.7426136841531843,0.31959505658596754,0.27615606714971364');
+	
 	      this.grid = new _grid2.default(this.grid_size[0], this.grid_size[1]);
 	      this.grid.checkGrid(true);
 	      this._loaded = true;
@@ -12221,6 +12224,10 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
+	var _game = __webpack_require__(/*! ./game.jsx */ 1);
+	
+	var _game2 = _interopRequireDefault(_game);
+	
 	var _gem = __webpack_require__(/*! ./gem.jsx */ 2);
 	
 	var _gem2 = _interopRequireDefault(_gem);
@@ -12344,7 +12351,7 @@
 	    value: function getNewGem() {
 	      if (debug) console.log('getNewGem called', arguments, this);
 	
-	      if (Game.instance.loaded) {
+	      if (_game2.default.instance.loaded) {
 	        debugger;
 	      }
 	

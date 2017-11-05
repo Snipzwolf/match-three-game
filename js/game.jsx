@@ -30,6 +30,9 @@ class Game {
   }
 
   create(){
+    console.log('rnd state is ', this.game.rnd.state());
+    //this.game.rnd.state('!rnd,1,0.7426136841531843,0.31959505658596754,0.27615606714971364');
+
     this.grid = new Grid(this.grid_size[0], this.grid_size[1])
     this.grid.checkGrid(true);
     this._loaded = true;

@@ -1,3 +1,4 @@
+import Game from './game.jsx';
 import Gem from './gem.jsx';
 import _lang from 'lodash/lang';
 import Options from './options.js';

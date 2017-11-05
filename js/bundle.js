@@ -12277,8 +12277,8 @@
 	      return this._gem;
 	    },
 	    set: function set(newGem) {
+	      this._gem = newGem;
 	      if (!_lang3.default.isNull(newGem)) {
-	        this._gem = newGem;
 	        this._gem.reposition(this.xPos, this.yPos);
 	        this._gem.clickCallback = this.onGemClick.bind(this);
 	        this._gem.setDebugInfo(this.gridPos, this.neighbours);
@@ -12341,7 +12341,6 @@
 	
 	        if (lastEl.gem === null) {
 	          lastEl.gem = newGem;
-	          lastEl.show();
 	          lastEl.getNewGem();
 	        }
 	      } while ((lastEl = nextEl) !== null);

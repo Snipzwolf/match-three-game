@@ -156,7 +156,6 @@
 	      this.grid = new _grid2.default(this.grid_size[0], this.grid_size[1]);
 	      this.grid.checkGrid(true);
 	      this._loaded = true;
-	      console.log(this.grid);
 	    }
 	  }, {
 	    key: 'update',
@@ -191,6 +190,13 @@
 	
 	        if (matches.x.length < 3 && matches.y.length < 3) {
 	          if (debug) console.log('no matches found', matches.x, matches.y, _arguments, _this2);
+	        } else {
+	          /*
+	          * if there was matches above check the grid for new matches
+	          * caused by gems moving or new gems added
+	          * TODO change to only check relevant grid elements and not the whole grid
+	          */
+	          _this2.grid.checkGrid();
 	        }
 	      });
 	    }

@@ -19,7 +19,7 @@ class Game {
     this.grid_size = [5, 4];
     this.grid = null;
     this.scoreboard = Scoreboard.instance;
-    
+
     this.game = new Phaser.Game(this.grid_size[0] * Gem.width, this.grid_size[1] * Gem.height, Phaser.AUTO, 'game-canvas', {
       preload: () => this.preload(),
       create: () => this.create(),
@@ -41,7 +41,6 @@ class Game {
     this.grid = new Grid(this.grid_size[0], this.grid_size[1])
     this.grid.checkGrid(true);
     this._loaded = true;
-    console.log(this.grid);
   }
 
   update(){
@@ -73,6 +72,13 @@ class Game {
 
       if((matches.x.length < 3) && (matches.y.length < 3)){
         if(debug)console.log('no matches found', matches.x, matches.y, arguments, this);
+      }else{
+        /*
+        * if there was matches above check the grid for new matches
+        * caused by gems moving or new gems added
+        * TODO change to only check relevant grid elements and not the whole grid
+        */
+        this.grid.checkGrid();
       }
     });
   }

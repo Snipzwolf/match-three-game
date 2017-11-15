@@ -19,6 +19,7 @@ class Game {
     this.grid_size = [5, 4];
     this.grid = null;
     this.scoreboard = Scoreboard.instance;
+    
     this.game = new Phaser.Game(this.grid_size[0] * Gem.width, this.grid_size[1] * Gem.height, Phaser.AUTO, 'game-canvas', {
       preload: () => this.preload(),
       create: () => this.create(),
@@ -79,7 +80,7 @@ class Game {
   _addToPlayerScore(score){
     if(this._loaded){
       this.playerScore += score;
-      window._updateScore(this.playerScore);
+      this.scoreboard.updateScore(this.playerScore);
     }
   }
 

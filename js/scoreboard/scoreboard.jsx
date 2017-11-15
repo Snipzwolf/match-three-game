@@ -2,6 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import moment from 'moment';
 
+var instance = null,
+    _updateScore = null;
+
 class Scoreboard extends React.Component{
     static propTypes = {
       score: React.PropTypes.number
@@ -26,7 +29,7 @@ class Scoreboard extends React.Component{
           });
         }, 1000);
 
-        window._updateScore = this.setScore.bind(this); //total hack as i can think of a better way... yet?
+        _updateScore = this.setScore.bind(this); //total hack as i cant think of a better way... yet?
     }
 
     setScore(score){
@@ -43,14 +46,21 @@ class Scoreboard extends React.Component{
     }
 }
 
-var instance = null;
 class ScoreboardSingleton{
   static get instance(){
     if(!instance){
-      //instance = new Scoreboard();
-      instance = <Scoreboard />
+      instance = {
+        scoreboard: <Scoreboard />
+      };
+
+      Object.defineProperty(instance, 'updateScore', {
+        get: function(){
+          return _updateScore;
+        }
+      });
+
       ReactDOM.render(
-        instance,
+        instance.scoreboard,
         document.getElementById('info')
       );
     }

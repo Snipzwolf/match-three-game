@@ -1,0 +1,29 @@
+%neon-content-styles{
+	font-family: 'Monoton', cursive;
+	text-transform: uppercase;
+	display: inline-block;
+  font-size: 1.5rem;
+}
+
+#scoreboard{
+  min-width: 300px;
+  min-height: 300px;
+  padding: 10px;
+
+  h2 {
+    @extend %neon-content-styles;
+    color: #fff;
+    text-shadow: 0 0 80px #ffffff,0 0 30px #008000,0 0 6px #0000ff;
+    margin-right: 0.5rem;
+  }
+
+  p {
+    @extend %neon-content-styles;
+    color: red;
+    text-shadow: 0 0 80px red,0 0 30px FireBrick,0 0 6px DarkRed;
+  }
+
+  .scoreboard__section{
+    margin-bottom: 1.6rem;
+  }
+}

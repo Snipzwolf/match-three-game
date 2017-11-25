@@ -40,8 +40,12 @@ class Scoreboard extends React.Component{
 
     render(){
         return <div id="scoreboard">
-          <h2>Score:</h2><p>{ this.state.score }</p>
-          <h2>Playtime:</h2><p>{ moment.utc(this.state.playtime).format("HH:mm:ss") }</p>
+          <section className="scoreboard__section scoreboard__section--score">
+            <h2>Score:</h2><p>{ this.state.score }</p>
+          </section>
+          <section className="scoreboard__section scoreboard__section--playtime">
+            <h2>Playtime:</h2><p>{ moment.utc(this.state.playtime).format("HH:mm:ss") }</p>
+          </section>
         </div>;
     }
 }

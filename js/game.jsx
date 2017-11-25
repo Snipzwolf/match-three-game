@@ -14,16 +14,23 @@ class Game {
 
   constructor(){
     this._loaded = false;
-    this.grid_size = [15, 9];
+    this.grid_size = [15, 8];
     //this.grid_size = [3, 3];
-    this.grid_size = [5, 4];
+    //this.grid_size = [5, 4];
     this.grid = null;
     this.scoreboard = Scoreboard.instance;
 
-    this.game = new Phaser.Game(this.grid_size[0] * Gem.width, this.grid_size[1] * Gem.height, Phaser.AUTO, 'game-canvas', {
-      preload: () => this.preload(),
-      create: () => this.create(),
-      update: () => this.update(),
+    this.game = new Phaser.Game({
+      width: (this.grid_size[0] * Gem.width),
+      height: (this.grid_size[1] * Gem.height),
+      renderer: Phaser.AUTO,
+      parent: 'game-canvas',
+      state: {
+        preload: () => this.preload(),
+        create: () => this.create(),
+        update: () => this.update()
+      },
+      transparent: true,
       enableDebug: false
     });
 

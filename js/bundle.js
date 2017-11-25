@@ -120,22 +120,29 @@
 	    _classCallCheck(this, Game);
 	
 	    this._loaded = false;
-	    this.grid_size = [15, 9];
+	    this.grid_size = [15, 8];
 	    //this.grid_size = [3, 3];
-	    this.grid_size = [5, 4];
+	    //this.grid_size = [5, 4];
 	    this.grid = null;
 	    this.scoreboard = _scoreboard2.default.instance;
 	
-	    this.game = new Phaser.Game(this.grid_size[0] * _gem2.default.width, this.grid_size[1] * _gem2.default.height, Phaser.AUTO, 'game-canvas', {
-	      preload: function preload() {
-	        return _this.preload();
+	    this.game = new Phaser.Game({
+	      width: this.grid_size[0] * _gem2.default.width,
+	      height: this.grid_size[1] * _gem2.default.height,
+	      renderer: Phaser.AUTO,
+	      parent: 'game-canvas',
+	      state: {
+	        preload: function preload() {
+	          return _this.preload();
+	        },
+	        create: function create() {
+	          return _this.create();
+	        },
+	        update: function update() {
+	          return _this.update();
+	        }
 	      },
-	      create: function create() {
-	        return _this.create();
-	      },
-	      update: function update() {
-	        return _this.update();
-	      },
+	      transparent: true,
 	      enableDebug: false
 	    });
 	
@@ -376,24 +383,32 @@
 	        'div',
 	        { id: 'scoreboard' },
 	        _react2.default.createElement(
-	          'h2',
-	          null,
-	          'Score:'
+	          'section',
+	          { className: 'scoreboard__section scoreboard__section--score' },
+	          _react2.default.createElement(
+	            'h2',
+	            null,
+	            'Score:'
+	          ),
+	          _react2.default.createElement(
+	            'p',
+	            null,
+	            this.state.score
+	          )
 	        ),
 	        _react2.default.createElement(
-	          'p',
-	          null,
-	          this.state.score
-	        ),
-	        _react2.default.createElement(
-	          'h2',
-	          null,
-	          'Playtime:'
-	        ),
-	        _react2.default.createElement(
-	          'p',
-	          null,
-	          _moment2.default.utc(this.state.playtime).format("HH:mm:ss")
+	          'section',
+	          { className: 'scoreboard__section scoreboard__section--playtime' },
+	          _react2.default.createElement(
+	            'h2',
+	            null,
+	            'Playtime:'
+	          ),
+	          _react2.default.createElement(
+	            'p',
+	            null,
+	            _moment2.default.utc(this.state.playtime).format("HH:mm:ss")
+	          )
 	        )
 	      );
 	    }

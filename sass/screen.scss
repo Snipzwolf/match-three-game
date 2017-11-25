@@ -1,3 +1,47 @@
+@import "compass/reset",
+				"compass/css3";
+
+@import url("http://fonts.googleapis.com/css?family=Monoton");
+
+body{
+  background-color: #111111;
+}
+
 #game-canvas{
+  display: inline-block;
   margin-right: 10px;
 }
+
+#info{
+  display: inline-block;
+  vertical-align: top;
+}
+
+$border-neon: #B6FF00;
+@include keyframes(border-neon-out){
+  from{
+    @include box-shadow(0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px $border-neon, 0 0 70px $border-neon, 0 0 80px $border-neon, 0 0 150px $border-neon);
+  }
+  to{
+    @include box-shadow(0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px $border-neon, 0 0 35px $border-neon, 0 0 40px $border-neon, 0 0 50px $border-neon, 0 0 75px $border-neon);
+  }
+}
+
+@include keyframes(border-neon-in){
+  from{
+    @include box-shadow(0 0 10px #fff inset, 0 0 20px #fff inset, 0 0 30px #fff inset, 0 0 40px $border-neon inset, 0 0 70px $border-neon inset, 0 0 80px $border-neon inset, 0 0 150px $border-neon inset);
+  }
+  to{
+    @include box-shadow(0 0 5px #fff inset, 0 0 10px #fff inset, 0 0 15px #fff inset, 0 0 20px $border-neon inset, 0 0 35px $border-neon inset, 0 0 40px $border-neon inset, 0 0 50px $border-neon inset, 0 0 75px $border-neon inset);
+  }
+}
+
+#game{
+	padding: 50px;
+	border: 3px solid $border-neon;
+	min-width: 610px;
+	@include animation(border-neon-in 1.5s ease-in-out infinite alternate);
+	@include  border-radius(10px);
+}
+
+@import "scoreboard"

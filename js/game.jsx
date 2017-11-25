@@ -48,10 +48,10 @@ class Game {
   }
 
   checkForMatch(setupPhase){
-    if(debug)console.log('checkForMatch called', arguments, this);
+    if(debug)console.log('checkForMatch - called', arguments, this);
 
     Object.keys(arguments).map((key, idx) => {
-      if(debug)console.log('checking next element', idx, arguments[key]);
+      if(debug)console.log('checkForMatch - checking next element', idx, arguments[key]);
       if(idx === 0){
         return; //skip the first argument
       }
@@ -59,19 +59,19 @@ class Game {
       var matches = this._getScores(setupPhase, arguments[key]);
 
       if(matches.x.length >= 3){
-        if(debug)console.log('x matches found', matches.x);
+        if(debug)console.log('checkForMatch - x matches found', matches.x, matches.x.map(val => val.gem.name));
         this._onMatches(setupPhase, matches.x);
         this._addToPlayerScore(matches.x.length);
       }
 
       if(matches.y.length >= 3){
-        if(debug)console.log('y matches found', matches.y);
+        if(debug)console.log('checkForMatch - y matches found', matches.y, matches.y.map(val => val.gem.name));
         this._onMatches(setupPhase, matches.y);
         this._addToPlayerScore(matches.y.length);
       }
 
       if((matches.x.length < 3) && (matches.y.length < 3)){
-        if(debug)console.log('no matches found', matches.x, matches.y, arguments, this);
+        if(debug)console.log('checkForMatch - no matches found', matches.x, matches.y, arguments, this);
       }else{
         /*
         * if there was matches above check the grid for new matches

@@ -166,10 +166,10 @@
 	      var _arguments = arguments,
 	          _this2 = this;
 	
-	      if (debug) console.log('checkForMatch called', arguments, this);
+	      if (debug) console.log('checkForMatch - called', arguments, this);
 	
 	      Object.keys(arguments).map(function (key, idx) {
-	        if (debug) console.log('checking next element', idx, _arguments[key]);
+	        if (debug) console.log('checkForMatch - checking next element', idx, _arguments[key]);
 	        if (idx === 0) {
 	          return; //skip the first argument
 	        }
@@ -177,19 +177,23 @@
 	        var matches = _this2._getScores(setupPhase, _arguments[key]);
 	
 	        if (matches.x.length >= 3) {
-	          if (debug) console.log('x matches found', matches.x);
+	          if (debug) console.log('checkForMatch - x matches found', matches.x, matches.x.map(function (val) {
+	            return val.gem.name;
+	          }));
 	          _this2._onMatches(setupPhase, matches.x);
 	          _this2._addToPlayerScore(matches.x.length);
 	        }
 	
 	        if (matches.y.length >= 3) {
-	          if (debug) console.log('y matches found', matches.y);
+	          if (debug) console.log('checkForMatch - y matches found', matches.y, matches.y.map(function (val) {
+	            return val.gem.name;
+	          }));
 	          _this2._onMatches(setupPhase, matches.y);
 	          _this2._addToPlayerScore(matches.y.length);
 	        }
 	
 	        if (matches.x.length < 3 && matches.y.length < 3) {
-	          if (debug) console.log('no matches found', matches.x, matches.y, _arguments, _this2);
+	          if (debug) console.log('checkForMatch - no matches found', matches.x, matches.y, _arguments, _this2);
 	        } else {
 	          /*
 	          * if there was matches above check the grid for new matches
@@ -39790,7 +39794,13 @@
 	    value: function onClick(sprite, ptr) {
 	      if (debug) console.log('onClick called', arguments, this);
 	
+	      this.sprite.alpha = 0.5;
 	      this._clickCallback.apply(this, arguments);
+	    }
+	  }, {
+	    key: 'onSwap',
+	    value: function onSwap() {
+	      this.sprite.alpha = 1;
 	    }
 	  }, {
 	    key: 'reposition',
@@ -39874,7 +39884,7 @@
 	  debug: false,
 	  swapSpeed: 200,
 	  ignore_debug: {
-	    gem: false,
+	    gem: true,
 	    game: false
 	  }
 	});
@@ -47310,6 +47320,12 @@
 	      var oldGem = this.gem;
 	      this.gem = otherGridEl.gem;
 	      otherGridEl.gem = oldGem;
+	
+	      if (this.gem !== null) {
+	        this.gem.onSwap();
+	      }
+	
+	      otherGridEl.gem.onSwap();
 	    }
 	  }, {
 	    key: 'onGemMatch',

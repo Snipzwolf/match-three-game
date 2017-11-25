@@ -53,6 +53,12 @@ class GridElement{
     var oldGem = this.gem;
     this.gem = otherGridEl.gem;
     otherGridEl.gem = oldGem;
+
+    if(this.gem !== null){
+      this.gem.onSwap();
+    }
+
+    otherGridEl.gem.onSwap();
   }
 
   onGemMatch(){

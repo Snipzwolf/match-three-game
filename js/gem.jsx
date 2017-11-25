@@ -44,7 +44,12 @@ class Gem{
   onClick(sprite, ptr){
     if(debug)console.log('onClick called', arguments, this);
 
+    this.sprite.alpha = 0.5;
     this._clickCallback(...arguments);
+  }
+
+  onSwap(){
+    this.sprite.alpha = 1;
   }
 
   reposition(x, y, callback){

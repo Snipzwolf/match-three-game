@@ -1,6 +1,6 @@
 export default Object.freeze({
   debug: false,
-  swapSpeed: 200,
+  swapSpeed: 500,
   ignore_debug: {
     gem: true,
     game: false

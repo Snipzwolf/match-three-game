@@ -18,7 +18,7 @@ class GridElement{
   set gem(newGem){
     this._gem = newGem;
     if(!_lang.isNull(newGem)){
-      this._gem.reposition(this.xPos, this.yPos);
+      this.gem.reposition(this.xPos, this.yPos);
       this._gem.clickCallback = this.onGemClick.bind(this);
       this._gem.setDebugInfo(this.gridPos, this.neighbours);
     }
@@ -53,12 +53,6 @@ class GridElement{
     var oldGem = this.gem;
     this.gem = otherGridEl.gem;
     otherGridEl.gem = oldGem;
-
-    if(this.gem !== null){
-      this.gem.onSwap();
-    }
-
-    otherGridEl.gem.onSwap();
   }
 
   onGemMatch(){

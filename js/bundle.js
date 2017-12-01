@@ -161,7 +161,7 @@
 	      //this.game.rnd.state('!rnd,1,0.7426136841531843,0.31959505658596754,0.27615606714971364');
 	
 	      this.grid = new _grid2.default(this.grid_size[0], this.grid_size[1]);
-	      this.grid.checkGrid(true);
+	      this.grid.checkGrid();
 	      this._loaded = true;
 	    }
 	  }, {
@@ -169,7 +169,7 @@
 	    value: function update() {}
 	  }, {
 	    key: 'checkForMatch',
-	    value: function checkForMatch(setupPhase) {
+	    value: function checkForMatch() {
 	      var _arguments = arguments,
 	          _this2 = this;
 	
@@ -181,13 +181,13 @@
 	          return; //skip the first argument
 	        }
 	
-	        var matches = _this2._getScores(setupPhase, _arguments[key]);
+	        var matches = _this2._getScores(_arguments[key]);
 	
 	        if (matches.x.length >= 3) {
 	          if (debug) console.log('checkForMatch - x matches found', matches.x, matches.x.map(function (val) {
 	            return val.gem.name;
 	          }));
-	          _this2._onMatches(setupPhase, matches.x);
+	          _this2._onMatches(matches.x);
 	          _this2._addToPlayerScore(matches.x.length);
 	        }
 	
@@ -195,7 +195,7 @@
 	          if (debug) console.log('checkForMatch - y matches found', matches.y, matches.y.map(function (val) {
 	            return val.gem.name;
 	          }));
-	          _this2._onMatches(setupPhase, matches.y);
+	          _this2._onMatches(matches.y);
 	          _this2._addToPlayerScore(matches.y.length);
 	        }
 	
@@ -221,20 +221,20 @@
 	    }
 	  }, {
 	    key: '_getScores',
-	    value: function _getScores(setupPhase, element) {
+	    value: function _getScores(element) {
 	      var ret = {};
 	
-	      ret['x'] = this._getScore(setupPhase, 'left', element);
-	      ret['y'] = this._getScore(setupPhase, 'up', element);
+	      ret['x'] = this._getScore('left', element);
+	      ret['y'] = this._getScore('up', element);
 	
-	      this._getScore(setupPhase, 'right', element, ret['x']);
-	      this._getScore(setupPhase, 'down', element, ret['y']);
+	      this._getScore('right', element, ret['x']);
+	      this._getScore('down', element, ret['y']);
 	
 	      return ret;
 	    }
 	  }, {
 	    key: '_getScore',
-	    value: function _getScore(setupPhase, direction, startEl, matchArr, lastEl) {
+	    value: function _getScore(direction, startEl, matchArr, lastEl) {
 	      matchArr = matchArr || [startEl];
 	      lastEl = lastEl || startEl;
 	
@@ -249,21 +249,21 @@
 	      }
 	
 	      var nextEl = this.grid.getElementAt(nextPos);
-	      if (setupPhase && _lang3.default.isNull(nextEl)) {
+	      if (!this.loaded && _lang3.default.isNull(nextEl)) {
 	        return matchArr;
 	      }
 	
 	      if (lastEl.gem.isMatch(nextEl.gem)) {
 	        matchArr.push(nextEl);
-	        this._getScore(setupPhase, direction, startEl, matchArr, nextEl);
+	        this._getScore(direction, startEl, matchArr, nextEl);
 	      }
 	
 	      return matchArr;
 	    }
 	  }, {
 	    key: '_onMatches',
-	    value: function _onMatches(setupPhase, matches) {
-	      if (setupPhase) {
+	    value: function _onMatches(matches) {
+	      if (!this.loaded) {
 	        var i = 1;
 	        while (i++ <= 6) {
 	          while (true) {
@@ -39809,27 +39809,33 @@
 	    value: function onClick(sprite, ptr) {
 	      if (debug) console.log('onClick called', arguments, this);
 	
-	      this.sprite.alpha = 0.5;
+	      this.setFocus(true);
 	      this._clickCallback.apply(this, arguments);
 	    }
 	  }, {
-	    key: 'onSwap',
-	    value: function onSwap() {
-	      this.sprite.alpha = 1;
+	    key: 'setFocus',
+	    value: function setFocus(isFocus) {
+	      this.sprite.alpha = isFocus ? 0.5 : 1;
 	    }
 	  }, {
 	    key: 'reposition',
 	    value: function reposition(x, y, callback) {
+	      var _this = this;
+	
 	      if (debug) console.log('reposition called', arguments, this);
 	
 	      var tween = _game2.default.instance.phaser.add.tween(this.sprite).to({
 	        x: x,
 	        y: y
-	      }, _options2.default.swapSpeed, Phaser.Easing.Linear.None, true);
+	      }, _game2.default.instance.loaded ? _options2.default.swapSpeed : 0, Phaser.Easing.Linear.None, true);
 	
 	      if (!_lang3.default.isUndefined(callback)) {
 	        tween.onComplete.add(callback);
 	      }
+	
+	      tween.onComplete.add(function () {
+	        return _this.setFocus(false);
+	      });
 	
 	      //this.sprite.x = x;
 	      //this.sprite.y = y;
@@ -39897,7 +39903,7 @@
 	});
 	exports.default = Object.freeze({
 	  debug: false,
-	  swapSpeed: 200,
+	  swapSpeed: 500,
 	  ignore_debug: {
 	    gem: true,
 	    game: false
@@ -47068,11 +47074,11 @@
 	    }
 	  }, {
 	    key: 'checkGrid',
-	    value: function checkGrid(setupPhase) {
+	    value: function checkGrid() {
 	      var _ref, _Game$instance;
 	
 	      var allElements = (_ref = []).concat.apply(_ref, _toConsumableArray(this.grid));
-	      (_Game$instance = _game2.default.instance).checkForMatch.apply(_Game$instance, [_lang3.default.isUndefined(setupPhase) ? false : setupPhase].concat(_toConsumableArray(allElements)));
+	      (_Game$instance = _game2.default.instance).checkForMatch.apply(_Game$instance, _toConsumableArray(allElements));
 	    }
 	  }, {
 	    key: 'getElementAt',
@@ -47294,7 +47300,7 @@
 	    set: function set(newGem) {
 	      this._gem = newGem;
 	      if (!_lang3.default.isNull(newGem)) {
-	        this._gem.reposition(this.xPos, this.yPos);
+	        this.gem.reposition(this.xPos, this.yPos);
 	        this._gem.clickCallback = this.onGemClick.bind(this);
 	        this._gem.setDebugInfo(this.gridPos, this.neighbours);
 	      }
@@ -47335,12 +47341,6 @@
 	      var oldGem = this.gem;
 	      this.gem = otherGridEl.gem;
 	      otherGridEl.gem = oldGem;
-	
-	      if (this.gem !== null) {
-	        this.gem.onSwap();
-	      }
-	
-	      otherGridEl.gem.onSwap();
 	    }
 	  }, {
 	    key: 'onGemMatch',

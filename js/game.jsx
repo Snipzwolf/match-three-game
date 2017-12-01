@@ -46,7 +46,7 @@ class Game {
     //this.game.rnd.state('!rnd,1,0.7426136841531843,0.31959505658596754,0.27615606714971364');
 
     this.grid = new Grid(this.grid_size[0], this.grid_size[1])
-    this.grid.checkGrid(true);
+    this.grid.checkGrid();
     this._loaded = true;
   }
 
@@ -54,7 +54,7 @@ class Game {
 
   }
 
-  checkForMatch(setupPhase){
+  checkForMatch(){
     if(debug)console.log('checkForMatch - called', arguments, this);
 
     Object.keys(arguments).map((key, idx) => {
@@ -63,17 +63,17 @@ class Game {
         return; //skip the first argument
       }
 
-      var matches = this._getScores(setupPhase, arguments[key]);
+      var matches = this._getScores(arguments[key]);
 
       if(matches.x.length >= 3){
         if(debug)console.log('checkForMatch - x matches found', matches.x, matches.x.map(val => val.gem.name));
-        this._onMatches(setupPhase, matches.x);
+        this._onMatches(matches.x);
         this._addToPlayerScore(matches.x.length);
       }
 
       if(matches.y.length >= 3){
         if(debug)console.log('checkForMatch - y matches found', matches.y, matches.y.map(val => val.gem.name));
-        this._onMatches(setupPhase, matches.y);
+        this._onMatches(matches.y);
         this._addToPlayerScore(matches.y.length);
       }
 
@@ -97,19 +97,19 @@ class Game {
     }
   }
 
-  _getScores(setupPhase, element){
+  _getScores(element){
     var ret = {};
 
-    ret['x'] = this._getScore(setupPhase, 'left', element);
-    ret['y'] = this._getScore(setupPhase, 'up', element);
+    ret['x'] = this._getScore('left', element);
+    ret['y'] = this._getScore('up', element);
 
-    this._getScore(setupPhase, 'right', element, ret['x']);
-    this._getScore(setupPhase, 'down', element, ret['y']);
+    this._getScore('right', element, ret['x']);
+    this._getScore('down', element, ret['y']);
 
     return ret;
   }
 
-  _getScore(setupPhase, direction, startEl, matchArr, lastEl){
+  _getScore(direction, startEl, matchArr, lastEl){
     matchArr = matchArr || [ startEl ];
     lastEl = lastEl || startEl;
 
@@ -124,20 +124,20 @@ class Game {
     }
 
     var nextEl = this.grid.getElementAt(nextPos);
-    if(setupPhase && _lang.isNull(nextEl)){
+    if(!this.loaded && _lang.isNull(nextEl)){
       return matchArr;
     }
 
     if(lastEl.gem.isMatch(nextEl.gem)){
       matchArr.push(nextEl);
-      this._getScore(setupPhase, direction, startEl, matchArr, nextEl);
+      this._getScore(direction, startEl, matchArr, nextEl);
     }
 
     return matchArr;
   }
 
-  _onMatches(setupPhase, matches){
-    if(setupPhase){
+  _onMatches(matches){
+    if(!this.loaded){
         var i = 1;
         while(i++ <= 6){
           while(true){

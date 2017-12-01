@@ -62,9 +62,9 @@ class Grid{
     }
   }
 
-  checkGrid(setupPhase){
+  checkGrid(){
     var allElements = [].concat(...this.grid);
-    Game.instance.checkForMatch((_lang.isUndefined(setupPhase) ? false : setupPhase), ...allElements);
+    Game.instance.checkForMatch(...allElements);
   }
 
   getElementAt(gridPos){

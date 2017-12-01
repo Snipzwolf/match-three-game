@@ -44,12 +44,12 @@ class Gem{
   onClick(sprite, ptr){
     if(debug)console.log('onClick called', arguments, this);
 
-    this.sprite.alpha = 0.5;
+    this.setFocus(true);
     this._clickCallback(...arguments);
   }
 
-  onSwap(){
-    this.sprite.alpha = 1;
+  setFocus(isFocus){
+    this.sprite.alpha = isFocus ? 0.5 : 1;
   }
 
   reposition(x, y, callback){
@@ -58,11 +58,13 @@ class Gem{
     var tween = Game.instance.phaser.add.tween(this.sprite).to({
           x: x,
           y: y
-     }, Options.swapSpeed, Phaser.Easing.Linear.None, true);
+     }, Game.instance.loaded ? Options.swapSpeed : 0, Phaser.Easing.Linear.None, true);
 
      if(!_lang.isUndefined(callback)){
        tween.onComplete.add(callback);
      }
+
+     tween.onComplete.add(() => this.setFocus(false));
 
     //this.sprite.x = x;
     //this.sprite.y = y;

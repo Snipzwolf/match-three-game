@@ -162,6 +162,8 @@
 	
 	      this.grid = new _grid2.default(this.grid_size[0], this.grid_size[1]);
 	      this.grid.checkGrid();
+	
+	      //console.log(JSON.stringify(this.grid))
 	      this._loaded = true;
 	    }
 	  }, {
@@ -39797,7 +39799,12 @@
 	    key: 'getNewSprite',
 	    value: function getNewSprite(xPos, yPos) {
 	      this._destroyCurrentSprite();
-	      this._getSprite(xPos, yPos);
+	
+	      this._getSprite(xPos, _game2.default.instance.loaded ? gem_size.h * -1 : yPos);
+	      var tween = _game2.default.instance.phaser.add.tween(this.sprite).to({
+	        x: xPos,
+	        y: yPos
+	      }, _game2.default.instance.loaded ? _options2.default.swapSpeed : 0, Phaser.Easing.Linear.None, true);
 	    }
 	  }, {
 	    key: 'isMatch',

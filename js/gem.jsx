@@ -34,7 +34,12 @@ class Gem{
 
   getNewSprite(xPos, yPos){
     this._destroyCurrentSprite();
-    this._getSprite(xPos, yPos);
+
+    this._getSprite(xPos, Game.instance.loaded ? (gem_size.h * -1) : yPos);
+    var tween = Game.instance.phaser.add.tween(this.sprite).to({
+          x: xPos,
+          y: yPos
+     }, Game.instance.loaded ? Options.swapSpeed : 0, Phaser.Easing.Linear.None, true);
   }
 
   isMatch(otherGem){

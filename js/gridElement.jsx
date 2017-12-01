@@ -24,7 +24,7 @@ class GridElement{
     }
   }
 
-  constructor(xPos, yPos, gridPos, gridClickCallback, parent){
+  constructor(xPos, yPos, gridPos, gridClickCallback, neighbours){
     this.xPos = xPos;
     this.yPos = yPos;
     this._gridPos = gridPos;
@@ -32,16 +32,9 @@ class GridElement{
     this.parent = parent;
 
     this._gem = new Gem(this.xPos, this.yPos, this.onGemClick.bind(this));
-    this._neighbours = {
-      'up': this.parent._up(this._gridPos),
-      'down': this.parent._down(this._gridPos),
-      'left': this.parent._left(this._gridPos),
-      'right': this.parent._right(this._gridPos),
-    }
+    this._neighbours = Object.freeze(neighbours);
 
     this._gem.setDebugInfo(this.gridPos, this.neighbours);
-
-    this._neighbours = Object.freeze(this._neighbours);
   }
 
   onGemClick(sprite, ptr){
@@ -53,29 +46,6 @@ class GridElement{
     var oldGem = this.gem;
     this.gem = otherGridEl.gem;
     otherGridEl.gem = oldGem;
-  }
-
-  onGemMatch(){
-    if(debug)console.log('onGemMatch called', arguments, this);
-    //may want to do more on a gem match than get a new gem so put
-    var newGem = this.gem;
-    newGem.hide();
-    this.gem = null;
-
-    var nextEl, lastEl = this;
-    do{
-      while((nextEl = lastEl._neighbours.up) !== null){
-        nextEl = this.parent.getElementAt(nextEl);
-        nextEl.swapGems(lastEl);
-        lastEl = nextEl;
-      }
-
-      if(lastEl.gem === null){
-        lastEl.gem = newGem;
-        lastEl.getNewGem();
-      }
-
-    }while((lastEl = nextEl) !== null);
   }
 
   getNewGem(){

@@ -31,7 +31,12 @@ class Grid{
             yPos = ((yIdx + 1) * Gem.height) - Gem.height,
             currentPos = i++;
 
-        return new GridElement(xPos, yPos, currentPos, this.onGridElementClick.bind(this), this);
+        return new GridElement(xPos, yPos, currentPos, this.onGridElementClick.bind(this), {
+          'up': this._up(currentPos),
+          'down': this._down(currentPos),
+          'left': this._left(currentPos),
+          'right': this._right(currentPos),
+        });
       });
     });
 

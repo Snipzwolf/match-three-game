@@ -47,6 +47,8 @@ class Game {
 
     this.grid = new Grid(this.grid_size[0], this.grid_size[1])
     this.grid.checkGrid();
+
+    //console.log(JSON.stringify(this.grid))
     this._loaded = true;
   }
 
@@ -88,6 +90,28 @@ class Game {
         this.grid.checkGrid();
       }
     });
+  }
+
+  _onGemMatch(gridEl){
+    if(debug)console.log('onGemMatch called', arguments, this);
+    var newGem = gridEl.gem;
+    newGem.hide();
+    gridEl.gem = null;
+
+    var nextEl, lastEl = gridEl;
+    do{
+      while((nextEl = lastEl.neighbours.up) !== null){
+        nextEl = this.grid.getElementAt(nextEl);
+        nextEl.swapGems(lastEl);
+        lastEl = nextEl;
+      }
+
+      if(lastEl.gem === null){
+        lastEl.gem = newGem;
+        lastEl.getNewGem();
+      }
+
+    }while((lastEl = nextEl) !== null);
   }
 
   _addToPlayerScore(score){
@@ -148,7 +172,7 @@ class Game {
           }
         }
     }else{
-      matches.map((match, idx) => match.onGemMatch());
+      matches.map((match, idx) => this._onGemMatch(match));
     }
   }
 

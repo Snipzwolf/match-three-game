@@ -25,6 +25,7 @@ class Grid{
 
     var i = 1;
     var selfObj = this;
+
     this.grid = Array(x).fill().map((xVal, xIdx, xArr) => {
       return Array(y).fill().map((yVal, yIdx, yArr) => {
         var xPos = ((xIdx + 1) * Gem.width) - Gem.width,

@@ -9026,7 +9026,17 @@
 	    _classCallCheck(this, Game);
 	
 	    this._loaded = false;
-	    this.grid_size = [15, 8];
+	
+	    var windowWidth = $(window).width(),
+	        windowGemWidth = Math.floor((windowWidth - 450) / (_gem2.default.width + _gem2.default.margin * 2));
+	
+	    if (windowGemWidth > 5) {
+	      this.grid_size = [windowGemWidth, 8];
+	    } else {
+	      this.grid_size = [8, 8];
+	    }
+	
+	    //this.grid_size = [15, 8];
 	    //this.grid_size = [3, 3];
 	    //this.grid_size = [5, 4];
 	    this.grid = null;
@@ -9069,7 +9079,6 @@
 	      this.grid = new _grid2.default(this.grid_size[0], this.grid_size[1]);
 	      this.grid.checkGrid();
 	
-	      //console.log(JSON.stringify(this.grid))
 	      this._loaded = true;
 	    }
 	  }, {
@@ -55966,6 +55975,7 @@
 	
 	    var i = 1;
 	    var selfObj = this;
+	
 	    this.grid = Array(x).fill().map(function (xVal, xIdx, xArr) {
 	      return Array(y).fill().map(function (yVal, yIdx, yArr) {
 	        var xPos = (xIdx + 1) * _gem2.default.width - _gem2.default.width,

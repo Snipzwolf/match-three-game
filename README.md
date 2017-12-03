@@ -14,5 +14,3 @@ You can use run_containers (requires linux with docker & tmux installed) to star
   * Could just allow matches like some games do but seems lazy
 * add controls to set width, height, and randomizer seed
 * add save to local storage
-* animate moving gems down after removing matched gems
-* move grid el onGemMatch into grid code

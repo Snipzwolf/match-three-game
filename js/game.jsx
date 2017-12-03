@@ -14,7 +14,17 @@ class Game {
 
   constructor(){
     this._loaded = false;
-    this.grid_size = [15, 8];
+
+    var windowWidth = $(window).width(),
+        windowGemWidth = Math.floor((windowWidth - 450) / (Gem.width + Gem.margin * 2));
+
+    if(windowGemWidth > 5){
+      this.grid_size = [windowGemWidth, 8];
+    }else{
+      this.grid_size = [8, 8];
+    }
+
+    //this.grid_size = [15, 8];
     //this.grid_size = [3, 3];
     //this.grid_size = [5, 4];
     this.grid = null;
@@ -48,7 +58,6 @@ class Game {
     this.grid = new Grid(this.grid_size[0], this.grid_size[1])
     this.grid.checkGrid();
 
-    //console.log(JSON.stringify(this.grid))
     this._loaded = true;
   }
 

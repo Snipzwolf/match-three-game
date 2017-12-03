@@ -55,6 +55,7 @@ class Grid{
       this.currentSelected = gridEl;
     }else if(this.currentSelected === gridEl){ //deselected intial gem
       if(debug)console.log('deselect');
+      this.currentSelected.getGem().setFocus(false);
       this.currentSelected = null;
     }else if(this.canSwap(this.currentSelected, gridEl)){
       if(debug)console.log('swap');
@@ -64,6 +65,11 @@ class Grid{
       });
     }else{
       if(debug)console.log('illegal move');
+      if(this.currentSelected !== gridEl){
+        gridEl.getGem().setFocus(false);
+      }
+
+      this.currentSelected.getGem().setFocus(false);
       this.currentSelected = null;
     }
   }

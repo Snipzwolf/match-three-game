@@ -9085,15 +9085,12 @@
 	
 	      Object.keys(arguments).map(function (key, idx) {
 	        if (debug) console.log('checkForMatch - checking next element', idx, _arguments[key]);
-	        if (idx === 0) {
-	          return; //skip the first argument
-	        }
 	
 	        var matches = _this2._getScores(_arguments[key]);
 	
 	        if (matches.x.length >= 3) {
 	          if (debug) console.log('checkForMatch - x matches found', matches.x, matches.x.map(function (val) {
-	            return val.gem.name;
+	            return val.getGem().name;
 	          }));
 	          _this2._onMatches(matches.x);
 	          _this2._addToPlayerScore(matches.x.length);
@@ -9101,7 +9098,7 @@
 	
 	        if (matches.y.length >= 3) {
 	          if (debug) console.log('checkForMatch - y matches found', matches.y, matches.y.map(function (val) {
-	            return val.gem.name;
+	            return val.getGem().name;
 	          }));
 	          _this2._onMatches(matches.y);
 	          _this2._addToPlayerScore(matches.y.length);
@@ -9123,9 +9120,9 @@
 	    key: '_onGemMatch',
 	    value: function _onGemMatch(gridEl) {
 	      if (debug) console.log('onGemMatch called', arguments, this);
-	      var newGem = gridEl.gem;
+	      var newGem = gridEl.getGem();
 	      newGem.hide();
-	      gridEl.gem = null;
+	      gridEl.setGem(null);
 	
 	      var nextEl,
 	          lastEl = gridEl;
@@ -9136,8 +9133,8 @@
 	          lastEl = nextEl;
 	        }
 	
-	        if (lastEl.gem === null) {
-	          lastEl.gem = newGem;
+	        if (lastEl.getGem() === null) {
+	          lastEl.setGem(newGem);
 	          lastEl.getNewGem();
 	        }
 	      } while ((lastEl = nextEl) !== null);
@@ -9184,7 +9181,7 @@
 	        return matchArr;
 	      }
 	
-	      if (lastEl.gem.isMatch(nextEl.gem)) {
+	      if (lastEl.getGem().isMatch(nextEl.getGem())) {
 	        matchArr.push(nextEl);
 	        this._getScore(direction, startEl, matchArr, nextEl);
 	      }
@@ -9201,7 +9198,7 @@
 	        while (i++ <= 6) {
 	          while (true) {
 	            matches[0].getNewGem();
-	            if (!matches[0].gem.isMatch(matches[1].gem)) {
+	            if (!matches[0].getGem().isMatch(matches[1].getGem())) {
 	              break;
 	            }
 	          }
@@ -48757,7 +48754,7 @@
 	    }
 	  }, {
 	    key: 'reposition',
-	    value: function reposition(x, y, callback) {
+	    value: function reposition(x, y) {
 	      var _this = this;
 	
 	      if (debug) console.log('reposition called', arguments, this);
@@ -48767,16 +48764,15 @@
 	        y: y
 	      }, _game2.default.instance.loaded ? _options2.default.swapSpeed : 0, Phaser.Easing.Linear.None, true);
 	
-	      if (!_lang3.default.isUndefined(callback)) {
-	        tween.onComplete.add(callback);
-	      }
-	
 	      tween.onComplete.add(function () {
 	        return _this.setFocus(false);
 	      });
 	
-	      //this.sprite.x = x;
-	      //this.sprite.y = y;
+	      return new Promise(function (resolve, reject) {
+	        tween.onComplete.add(function () {
+	          return resolve();
+	        });
+	      });
 	    }
 	  }, {
 	    key: 'hide',
@@ -55995,6 +55991,8 @@
 	  _createClass(Grid, [{
 	    key: 'onGridElementClick',
 	    value: function onGridElementClick(sprite, ptr, gridEl) {
+	      var _this2 = this;
+	
 	      if (debug) console.log('onGridElementClick called', arguments, this);
 	
 	      if (this.currentSelected === null) {
@@ -56007,9 +56005,10 @@
 	        this.currentSelected = null;
 	      } else if (this.canSwap(this.currentSelected, gridEl)) {
 	        if (debug) console.log('swap');
-	        this.currentSelected.swapGems(gridEl);
-	        _game2.default.instance.checkForMatch(false, this.currentSelected, gridEl);
-	        this.currentSelected = null;
+	        this.currentSelected.swapGems(gridEl).then(function () {
+	          _game2.default.instance.checkForMatch(_this2.currentSelected, gridEl);
+	          _this2.currentSelected = null;
+	        });
 	      } else {
 	        if (debug) console.log('illegal move');
 	        this.currentSelected = null;
@@ -56129,7 +56128,7 @@
 	  }, {
 	    key: '_getBounds',
 	    value: function _getBounds(gridPos) {
-	      var _this2 = this;
+	      var _this3 = this;
 	
 	      var currentX = this._getXIndex(gridPos),
 	          currentY = this._getYIndex(gridPos),
@@ -56140,7 +56139,7 @@
 	          return pos <= 0 ? gridPos : pos;
 	        }(gridPos - this.height),
 	        'right': function (pos) {
-	          return pos > _this2.width * _this2.height ? gridPos : pos;
+	          return pos > _this3.width * _this3.height ? gridPos : pos;
 	        }(gridPos + this.height)
 	      };
 	
@@ -56158,12 +56157,12 @@
 	  }, {
 	    key: '_getYIndex',
 	    value: function _getYIndex(gridPos) {
-	      var _this3 = this;
+	      var _this4 = this;
 	
 	      if (debug) console.log('_getYindex called', arguments, this);
 	
 	      return function (pos) {
-	        return pos || _this3.height;
+	        return pos || _this4.height;
 	      }(gridPos % this.height) - 1;
 	    }
 	  }]);
@@ -56211,7 +56210,63 @@
 	var debug = _options2.default.debug;
 	
 	var GridElement = function () {
+	  function GridElement(xPos, yPos, gridPos, gridClickCallback, neighbours) {
+	    _classCallCheck(this, GridElement);
+	
+	    this.xPos = xPos;
+	    this.yPos = yPos;
+	    this._gridPos = gridPos;
+	    this.gridClickCallback = gridClickCallback;
+	    this.parent = parent;
+	
+	    this._gem = new _gem2.default(this.xPos, this.yPos, this.onGemClick.bind(this));
+	    this._neighbours = Object.freeze(neighbours);
+	
+	    this._gem.setDebugInfo(this.gridPos, this.neighbours);
+	  }
+	
 	  _createClass(GridElement, [{
+	    key: 'getGem',
+	    value: function getGem() {
+	      return this._gem;
+	    }
+	  }, {
+	    key: 'setGem',
+	    value: function setGem(newGem) {
+	      this._gem = newGem;
+	
+	      if (!_lang3.default.isNull(newGem)) {
+	        this._gem.clickCallback = this.onGemClick.bind(this);
+	        this._gem.setDebugInfo(this.gridPos, this.neighbours);
+	
+	        return this._gem.reposition(this.xPos, this.yPos);
+	      }
+	
+	      return new Promise(function (resolve, reject) {
+	        return resolve();
+	      });
+	    }
+	  }, {
+	    key: 'onGemClick',
+	    value: function onGemClick(sprite, ptr) {
+	      if (debug) console.log('onGemClick called', arguments, this);
+	      this.gridClickCallback.apply(this, Array.prototype.slice.call(arguments).concat([this]));
+	    }
+	  }, {
+	    key: 'swapGems',
+	    value: function swapGems(otherGridEl) {
+	      var oldGem = this._gem;
+	
+	      return Promise.all([this.setGem(otherGridEl.getGem()), otherGridEl.setGem(oldGem)]);
+	    }
+	  }, {
+	    key: 'getNewGem',
+	    value: function getNewGem() {
+	      if (debug) console.log('getNewGem called', arguments, this);
+	
+	      this._gem.getNewSprite(this.xPos, this.yPos);
+	    }
+	  }, {
 	    key: 'gridPos',
 	    get: function get() {
 	      return this._gridPos;
@@ -56234,56 +56289,6 @@
 	    },
 	    set: function set(v) {
 	      return;
-	    }
-	  }, {
-	    key: 'gem',
-	    get: function get() {
-	      return this._gem;
-	    },
-	    set: function set(newGem) {
-	      this._gem = newGem;
-	      if (!_lang3.default.isNull(newGem)) {
-	        this.gem.reposition(this.xPos, this.yPos);
-	        this._gem.clickCallback = this.onGemClick.bind(this);
-	        this._gem.setDebugInfo(this.gridPos, this.neighbours);
-	      }
-	    }
-	  }]);
-	
-	  function GridElement(xPos, yPos, gridPos, gridClickCallback, neighbours) {
-	    _classCallCheck(this, GridElement);
-	
-	    this.xPos = xPos;
-	    this.yPos = yPos;
-	    this._gridPos = gridPos;
-	    this.gridClickCallback = gridClickCallback;
-	    this.parent = parent;
-	
-	    this._gem = new _gem2.default(this.xPos, this.yPos, this.onGemClick.bind(this));
-	    this._neighbours = Object.freeze(neighbours);
-	
-	    this._gem.setDebugInfo(this.gridPos, this.neighbours);
-	  }
-	
-	  _createClass(GridElement, [{
-	    key: 'onGemClick',
-	    value: function onGemClick(sprite, ptr) {
-	      if (debug) console.log('onGemClick called', arguments, this);
-	      this.gridClickCallback.apply(this, Array.prototype.slice.call(arguments).concat([this]));
-	    }
-	  }, {
-	    key: 'swapGems',
-	    value: function swapGems(otherGridEl) {
-	      var oldGem = this.gem;
-	      this.gem = otherGridEl.gem;
-	      otherGridEl.gem = oldGem;
-	    }
-	  }, {
-	    key: 'getNewGem',
-	    value: function getNewGem() {
-	      if (debug) console.log('getNewGem called', arguments, this);
-	
-	      this._gem.getNewSprite(this.xPos, this.yPos);
 	    }
 	  }]);
 	

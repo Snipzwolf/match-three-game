@@ -61,20 +61,17 @@ class Game {
 
     Object.keys(arguments).map((key, idx) => {
       if(debug)console.log('checkForMatch - checking next element', idx, arguments[key]);
-      if(idx === 0){
-        return; //skip the first argument
-      }
 
       var matches = this._getScores(arguments[key]);
 
       if(matches.x.length >= 3){
-        if(debug)console.log('checkForMatch - x matches found', matches.x, matches.x.map(val => val.gem.name));
+        if(debug)console.log('checkForMatch - x matches found', matches.x, matches.x.map(val => val.getGem().name));
         this._onMatches(matches.x);
         this._addToPlayerScore(matches.x.length);
       }
 
       if(matches.y.length >= 3){
-        if(debug)console.log('checkForMatch - y matches found', matches.y, matches.y.map(val => val.gem.name));
+        if(debug)console.log('checkForMatch - y matches found', matches.y, matches.y.map(val => val.getGem().name));
         this._onMatches(matches.y);
         this._addToPlayerScore(matches.y.length);
       }
@@ -94,9 +91,9 @@ class Game {
 
   _onGemMatch(gridEl){
     if(debug)console.log('onGemMatch called', arguments, this);
-    var newGem = gridEl.gem;
+    var newGem = gridEl.getGem();
     newGem.hide();
-    gridEl.gem = null;
+    gridEl.setGem(null);
 
     var nextEl, lastEl = gridEl;
     do{
@@ -106,8 +103,8 @@ class Game {
         lastEl = nextEl;
       }
 
-      if(lastEl.gem === null){
-        lastEl.gem = newGem;
+      if(lastEl.getGem() === null){
+        lastEl.setGem(newGem);
         lastEl.getNewGem();
       }
 
@@ -152,7 +149,7 @@ class Game {
       return matchArr;
     }
 
-    if(lastEl.gem.isMatch(nextEl.gem)){
+    if(lastEl.getGem().isMatch(nextEl.getGem())){
       matchArr.push(nextEl);
       this._getScore(direction, startEl, matchArr, nextEl);
     }
@@ -166,7 +163,7 @@ class Game {
         while(i++ <= 6){
           while(true){
             matches[0].getNewGem();
-            if(!matches[0].gem.isMatch(matches[1].gem)){
+            if(!matches[0].getGem().isMatch(matches[1].getGem())){
               break;
             }
           }

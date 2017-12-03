@@ -58,9 +58,10 @@ class Grid{
       this.currentSelected = null;
     }else if(this.canSwap(this.currentSelected, gridEl)){
       if(debug)console.log('swap');
-      this.currentSelected.swapGems(gridEl);
-      Game.instance.checkForMatch(false, this.currentSelected, gridEl);
-      this.currentSelected = null;
+      this.currentSelected.swapGems(gridEl).then(() => {
+        Game.instance.checkForMatch(this.currentSelected, gridEl);
+        this.currentSelected = null;
+      });
     }else{
       if(debug)console.log('illegal move');
       this.currentSelected = null;

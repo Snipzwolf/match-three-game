@@ -57,6 +57,8 @@ class Game {
 
     this.grid = new Grid(this.grid_size[0], this.grid_size[1])
     this.grid.checkGrid();
+    window.grid = this.grid;
+    //this.grid.getElementAt().gem.name
 
     this._loaded = true;
   }
@@ -123,7 +125,9 @@ class Game {
 
       if(lastEl.getGem() === null){
         lastEl.setGem(newGem);
+
         lastEl.getNewGem();
+        console.log('_onGemMatch', gridEl.gridPos, lastEl.gridPos, lastEl.getGem().name);
       }
 
     }while((lastEl = nextEl) !== null);
@@ -190,7 +194,9 @@ class Game {
           }
         }
     }else{
-      matches.map((match, idx) => {
+      matches.sort(function(a, b){
+        return a.gridPos - b.gridPos;
+      }).map((match, idx) => {
         promiseArr.push(this._onGemMatch(match));
       });
     }

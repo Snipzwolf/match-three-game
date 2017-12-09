@@ -9078,6 +9078,8 @@
 	
 	      this.grid = new _grid2.default(this.grid_size[0], this.grid_size[1]);
 	      this.grid.checkGrid();
+	      window.grid = this.grid;
+	      //this.grid.getElementAt().gem.name
 	
 	      this._loaded = true;
 	    }
@@ -9154,7 +9156,9 @@
 	
 	        if (lastEl.getGem() === null) {
 	          lastEl.setGem(newGem);
+	
 	          lastEl.getNewGem();
+	          console.log('_onGemMatch', gridEl.gridPos, lastEl.gridPos, lastEl.getGem().name);
 	        }
 	      } while ((lastEl = nextEl) !== null);
 	
@@ -9226,7 +9230,9 @@
 	          }
 	        }
 	      } else {
-	        matches.map(function (match, idx) {
+	        matches.sort(function (a, b) {
+	          return a.gridPos - b.gridPos;
+	        }).map(function (match, idx) {
 	          promiseArr.push(_this3._onGemMatch(match));
 	        });
 	      }

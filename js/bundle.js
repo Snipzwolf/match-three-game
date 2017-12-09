@@ -9092,6 +9092,9 @@
 	
 	      if (debug) console.log('checkForMatch - called', arguments, this);
 	
+	      var isPlayerMove = arguments.length === 2,
+	          hadMatch = false;
+	
 	      Object.keys(arguments).map(function (key, idx) {
 	        if (debug) console.log('checkForMatch - checking next element', idx, _arguments[key]);
 	
@@ -9100,6 +9103,7 @@
 	        if (matches.x.length < 3 && matches.y.length < 3) {
 	          if (debug) console.log('checkForMatch - no matches found', matches.x, matches.y, _arguments, _this2);
 	        } else {
+	          hadMatch = true;
 	          var promiseArr = [];
 	          if (matches.x.length >= 3) {
 	            if (debug) console.log('checkForMatch - x matches found', matches.x, matches.x.map(function (val) {
@@ -9122,11 +9126,13 @@
 	          * caused by gems moving or new gems added
 	          * TODO change to only check relevant grid elements and not the whole grid
 	          */
-	          Promise.all(promiseArr).then(function () {
+	          Promise.all(_this2._loaded ? promiseArr : []).then(function () {
 	            return _this2.grid.checkGrid();
 	          });
 	        }
 	      });
+	
+	      if (isPlayerMove && !hadMatch) this._addToPlayerScore(-1);
 	    }
 	  }, {
 	    key: '_onGemMatch',

@@ -68,6 +68,9 @@ class Game {
   checkForMatch(){
     if(debug)console.log('checkForMatch - called', arguments, this);
 
+    var isPlayerMove = arguments.length === 2,
+        hadMatch = false;
+
     Object.keys(arguments).map((key, idx) => {
       if(debug)console.log('checkForMatch - checking next element', idx, arguments[key]);
 
@@ -75,7 +78,9 @@ class Game {
 
       if((matches.x.length < 3) && (matches.y.length < 3)){
         if(debug)console.log('checkForMatch - no matches found', matches.x, matches.y, arguments, this);
+
       }else{
+        hadMatch = true;
         var promiseArr = [];
         if(matches.x.length >= 3){
           if(debug)console.log('checkForMatch - x matches found', matches.x, matches.x.map(val => val.getGem().name));
@@ -94,9 +99,11 @@ class Game {
         * caused by gems moving or new gems added
         * TODO change to only check relevant grid elements and not the whole grid
         */
-        Promise.all(promiseArr).then(() => this.grid.checkGrid());
+        Promise.all(this._loaded ? promiseArr : []).then(() => this.grid.checkGrid());
       }
     });
+
+    if(isPlayerMove && !hadMatch)this._addToPlayerScore(-1);
   }
 
   _onGemMatch(gridEl){

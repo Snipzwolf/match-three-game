@@ -18,5 +18,5 @@ You can use run_containers (requires linux with docker & tmux installed) to star
 * add save to local storage
 * add bonus score / score multipliers
   * either when matching multiple gem groups or a combo system when matching the same colours continuously
-* decrement score on every non match move
+* ~~decrement score on every non match move~~
 * pause functionality

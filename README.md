@@ -12,5 +12,11 @@ You can use run_containers (requires linux with docker & tmux installed) to star
   * You couldn't for example reuse the grid classes which could be fairly generic in something else until the refrences to other classes are removed
 * Preventing gem matches during the game intialization seems fairly inefficient and could lead to long loops while finding a gem that doesn't match
   * Could just allow matches like some games do but seems lazy
+
+## Extra Gameplay Ideas
 * add controls to set width, height, and randomizer seed
 * add save to local storage
+* add bonus score / score multipliers
+  * either when matching multiple gem groups or a combo system when matching the same colours continuously
+* decrement score on every non match move
+* pause functionality

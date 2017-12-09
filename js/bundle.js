@@ -9078,8 +9078,6 @@
 	
 	      this.grid = new _grid2.default(this.grid_size[0], this.grid_size[1]);
 	      this.grid.checkGrid();
-	      window.grid = this.grid;
-	      //this.grid.getElementAt().gem.name
 	
 	      this._loaded = true;
 	    }
@@ -9136,6 +9134,9 @@
 	
 	      if (isPlayerMove && !hadMatch) this._addToPlayerScore(-1);
 	    }
+	
+	    //this function should probably be combined with _onMatches as it's only ever call there
+	
 	  }, {
 	    key: '_onGemMatch',
 	    value: function _onGemMatch(gridEl) {
@@ -9158,7 +9159,6 @@
 	          lastEl.setGem(newGem);
 	
 	          lastEl.getNewGem();
-	          console.log('_onGemMatch', gridEl.gridPos, lastEl.gridPos, lastEl.getGem().name);
 	        }
 	      } while ((lastEl = nextEl) !== null);
 	

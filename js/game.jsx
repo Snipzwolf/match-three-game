@@ -57,8 +57,6 @@ class Game {
 
     this.grid = new Grid(this.grid_size[0], this.grid_size[1])
     this.grid.checkGrid();
-    window.grid = this.grid;
-    //this.grid.getElementAt().gem.name
 
     this._loaded = true;
   }
@@ -108,6 +106,7 @@ class Game {
     if(isPlayerMove && !hadMatch)this._addToPlayerScore(-1);
   }
 
+  //this function should probably be combined with _onMatches as it's only ever call there
   _onGemMatch(gridEl){
     if(debug)console.log('onGemMatch called', arguments, this);
     var promiseArr = [];
@@ -127,7 +126,6 @@ class Game {
         lastEl.setGem(newGem);
 
         lastEl.getNewGem();
-        console.log('_onGemMatch', gridEl.gridPos, lastEl.gridPos, lastEl.getGem().name);
       }
 
     }while((lastEl = nextEl) !== null);

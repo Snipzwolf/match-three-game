@@ -12,6 +12,7 @@ You can use run_containers (requires linux with docker & tmux installed) to star
   * You couldn't for example reuse the grid classes which could be fairly generic in something else until the references to other classes are removed
 * Preventing gem matches during the game intialization seems fairly inefficient and could lead to long loops while finding a gem that doesn't match
   * Could just allow matches like some games do but seems lazy
+* fix vertical match animations so that the column of gems slide down from above as a group
 
 ## Extra Gameplay Ideas
 

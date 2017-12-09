@@ -9097,31 +9097,34 @@
 	
 	        var matches = _this2._getScores(_arguments[key]);
 	
-	        if (matches.x.length >= 3) {
-	          if (debug) console.log('checkForMatch - x matches found', matches.x, matches.x.map(function (val) {
-	            return val.getGem().name;
-	          }));
-	          _this2._onMatches(matches.x);
-	          _this2._addToPlayerScore(matches.x.length);
-	        }
-	
-	        if (matches.y.length >= 3) {
-	          if (debug) console.log('checkForMatch - y matches found', matches.y, matches.y.map(function (val) {
-	            return val.getGem().name;
-	          }));
-	          _this2._onMatches(matches.y);
-	          _this2._addToPlayerScore(matches.y.length);
-	        }
-	
 	        if (matches.x.length < 3 && matches.y.length < 3) {
 	          if (debug) console.log('checkForMatch - no matches found', matches.x, matches.y, _arguments, _this2);
 	        } else {
+	          var promiseArr = [];
+	          if (matches.x.length >= 3) {
+	            if (debug) console.log('checkForMatch - x matches found', matches.x, matches.x.map(function (val) {
+	              return val.getGem().name;
+	            }));
+	            promiseArr.push(_this2._onMatches(matches.x));
+	            _this2._addToPlayerScore(matches.x.length);
+	          }
+	
+	          if (matches.y.length >= 3) {
+	            if (debug) console.log('checkForMatch - y matches found', matches.y, matches.y.map(function (val) {
+	              return val.getGem().name;
+	            }));
+	            promiseArr.push(_this2._onMatches(matches.y));
+	            _this2._addToPlayerScore(matches.y.length);
+	          }
+	
 	          /*
 	          * if there was matches above check the grid for new matches
 	          * caused by gems moving or new gems added
 	          * TODO change to only check relevant grid elements and not the whole grid
 	          */
-	          _this2.grid.checkGrid();
+	          Promise.all(promiseArr).then(function () {
+	            return _this2.grid.checkGrid();
+	          });
 	        }
 	      });
 	    }
@@ -9129,6 +9132,7 @@
 	    key: '_onGemMatch',
 	    value: function _onGemMatch(gridEl) {
 	      if (debug) console.log('onGemMatch called', arguments, this);
+	      var promiseArr = [];
 	      var newGem = gridEl.getGem();
 	      newGem.hide();
 	      gridEl.setGem(null);
@@ -9138,7 +9142,7 @@
 	      do {
 	        while ((nextEl = lastEl.neighbours.up) !== null) {
 	          nextEl = this.grid.getElementAt(nextEl);
-	          nextEl.swapGems(lastEl);
+	          promiseArr.push(nextEl.swapGems(lastEl));
 	          lastEl = nextEl;
 	        }
 	
@@ -9147,6 +9151,8 @@
 	          lastEl.getNewGem();
 	        }
 	      } while ((lastEl = nextEl) !== null);
+	
+	      return Promise.all(promiseArr);
 	    }
 	  }, {
 	    key: '_addToPlayerScore',
@@ -9202,6 +9208,7 @@
 	    value: function _onMatches(matches) {
 	      var _this3 = this;
 	
+	      var promiseArr = [];
 	      if (!this.loaded) {
 	        var i = 1;
 	        while (i++ <= 6) {
@@ -9214,9 +9221,11 @@
 	        }
 	      } else {
 	        matches.map(function (match, idx) {
-	          return _this3._onGemMatch(match);
+	          promiseArr.push(_this3._onGemMatch(match));
 	        });
 	      }
+	
+	      return Promise.all(promiseArr);
 	    }
 	  }]);
 	

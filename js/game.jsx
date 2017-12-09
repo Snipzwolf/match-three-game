@@ -73,33 +73,35 @@ class Game {
 
       var matches = this._getScores(arguments[key]);
 
-      if(matches.x.length >= 3){
-        if(debug)console.log('checkForMatch - x matches found', matches.x, matches.x.map(val => val.getGem().name));
-        this._onMatches(matches.x);
-        this._addToPlayerScore(matches.x.length);
-      }
-
-      if(matches.y.length >= 3){
-        if(debug)console.log('checkForMatch - y matches found', matches.y, matches.y.map(val => val.getGem().name));
-        this._onMatches(matches.y);
-        this._addToPlayerScore(matches.y.length);
-      }
-
       if((matches.x.length < 3) && (matches.y.length < 3)){
         if(debug)console.log('checkForMatch - no matches found', matches.x, matches.y, arguments, this);
       }else{
+        var promiseArr = [];
+        if(matches.x.length >= 3){
+          if(debug)console.log('checkForMatch - x matches found', matches.x, matches.x.map(val => val.getGem().name));
+          promiseArr.push(this._onMatches(matches.x));
+          this._addToPlayerScore(matches.x.length);
+        }
+
+        if(matches.y.length >= 3){
+          if(debug)console.log('checkForMatch - y matches found', matches.y, matches.y.map(val => val.getGem().name));
+          promiseArr.push(this._onMatches(matches.y));
+          this._addToPlayerScore(matches.y.length);
+        }
+
         /*
         * if there was matches above check the grid for new matches
         * caused by gems moving or new gems added
         * TODO change to only check relevant grid elements and not the whole grid
         */
-        this.grid.checkGrid();
+        Promise.all(promiseArr).then(() => this.grid.checkGrid());
       }
     });
   }
 
   _onGemMatch(gridEl){
     if(debug)console.log('onGemMatch called', arguments, this);
+    var promiseArr = [];
     var newGem = gridEl.getGem();
     newGem.hide();
     gridEl.setGem(null);
@@ -108,7 +110,7 @@ class Game {
     do{
       while((nextEl = lastEl.neighbours.up) !== null){
         nextEl = this.grid.getElementAt(nextEl);
-        nextEl.swapGems(lastEl);
+        promiseArr.push(nextEl.swapGems(lastEl));
         lastEl = nextEl;
       }
 
@@ -118,6 +120,8 @@ class Game {
       }
 
     }while((lastEl = nextEl) !== null);
+
+    return Promise.all(promiseArr);
   }
 
   _addToPlayerScore(score){
@@ -167,6 +171,7 @@ class Game {
   }
 
   _onMatches(matches){
+    var promiseArr = [];
     if(!this.loaded){
         var i = 1;
         while(i++ <= 6){
@@ -178,8 +183,12 @@ class Game {
           }
         }
     }else{
-      matches.map((match, idx) => this._onGemMatch(match));
+      matches.map((match, idx) => {
+        promiseArr.push(this._onGemMatch(match));
+      });
     }
+
+    return Promise.all(promiseArr);
   }
 
 }

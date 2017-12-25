@@ -106,33 +106,6 @@ class Game {
     if(isPlayerMove && !hadMatch)this._addToPlayerScore(-1);
   }
 
-  //this function should probably be combined with _onMatches as it's only ever call there
-  _onGemMatch(gridEl){
-    if(debug)console.log('onGemMatch called', arguments, this);
-    var promiseArr = [];
-    var newGem = gridEl.getGem();
-    newGem.hide();
-    gridEl.setGem(null);
-
-    var nextEl, lastEl = gridEl;
-    do{
-      while((nextEl = lastEl.neighbours.up) !== null){
-        nextEl = this.grid.getElementAt(nextEl);
-        promiseArr.push(nextEl.swapGems(lastEl));
-        lastEl = nextEl;
-      }
-
-      if(lastEl.getGem() === null){
-        lastEl.setGem(newGem);
-
-        lastEl.getNewGem();
-      }
-
-    }while((lastEl = nextEl) !== null);
-
-    return Promise.all(promiseArr);
-  }
-
   _addToPlayerScore(score){
     if(this._loaded){
       this.playerScore += score;
@@ -192,12 +165,91 @@ class Game {
           }
         }
     }else{
-      matches.sort(function(a, b){
+      var sortedMatches = matches.sort(function(a, b){
         return a.gridPos - b.gridPos;
-      }).map((match, idx) => {
-        promiseArr.push(this._onGemMatch(match));
       });
+
+      var lastVal = null;
+      var isVerticalMatch = sortedMatches.every(function(val, idx, arr){
+        var diff = 1;
+
+        if(lastVal !== null){
+          diff =  (val.gridPos - lastVal);
+        }
+
+        lastVal = val.gridPos;
+        return diff === 1;
+      });
+
+      var newGems = [],
+          newGemElements = [];
+
+      sortedMatches.map((gridEl, idx) => {
+        newGems.push(gridEl.getGem().hide());
+        gridEl.setGem(null);
+
+        var nextEl, lastEl = gridEl;
+        //do{
+          while((nextEl = lastEl.neighbours.up) !== null){
+            nextEl = this.grid.getElementAt(nextEl);
+            if(nextEl.getGem() === null){
+              break;
+            }
+
+            promiseArr.push(nextEl.swapGems(lastEl));
+            lastEl = nextEl;
+          }
+
+          newGemElements.push(lastEl);
+
+          /*
+          if(lastEl.getGem() === null){
+            lastEl.setGem(newGem);
+            newGems.push(newGem);
+
+            //promiseArr.push(lastEl.getNewGem());
+          }
+          */
+
+        //}while((lastEl = nextEl) !== null);
+      });
+
+      if(isVerticalMatch)newGemElements.reverse();
+
+      newGemElements.map((gridEl, idx) => {
+        gridEl.setGem(newGems.pop());
+        promiseArr.push(gridEl.getNewGem(isVerticalMatch ? idx : 0));
+      });
+
     }
+
+    return Promise.all(promiseArr);
+  }
+
+  //this function should probably be combined with _onMatches as it's only ever call there
+  _onGemMatch(gridEl){
+    if(debug)console.log('onGemMatch called', arguments, this);
+    var promiseArr = [];
+    var newGem = gridEl.getGem();
+    newGem.hide();
+    gridEl.setGem(null);
+
+    var newGemsPromiseArr = [];
+    var nextEl, lastEl = gridEl;
+    //do{
+      while((nextEl = lastEl.neighbours.up) !== null){
+        nextEl = this.grid.getElementAt(nextEl);
+        promiseArr.push(nextEl.swapGems(lastEl));
+        lastEl = nextEl;
+      }
+
+      if(lastEl.getGem() === null){
+        lastEl.setGem(newGem);
+
+        promiseArr.push(lastEl.getNewGem());
+      }
+
+    //}while((lastEl = nextEl) !== null);
 
     return Promise.all(promiseArr);
   }

@@ -32,14 +32,28 @@ class Gem{
     this.reloaded = false;
   }
 
-  getNewSprite(xPos, yPos){
+  getNewSprite(xPos, yPos, queuePos){
     this._destroyCurrentSprite();
 
-    this._getSprite(xPos, Game.instance.loaded ? (gem_size.h * -1) : yPos);
-    var tween = Game.instance.phaser.add.tween(this.sprite).to({
-          x: xPos,
-          y: yPos
-     }, Game.instance.loaded ? Options.swapSpeed : 0, Phaser.Easing.Linear.None, true);
+    var startYPos = yPos;
+    var tweenSpeed = 0;
+    if(Game.instance.loaded){
+      startYPos = (-((queuePos + 1) * gem_size.h));
+      tweenSpeed = Options.swapSpeed;
+      //tweenSpeed = (Math.abs(startYPos) / gem_size.h) * Options.swapSpeed;
+    }
+
+    this._getSprite(xPos, startYPos);
+    if(Game.instance.loaded){
+      var tween = Game.instance.phaser.add.tween(this.sprite).to({
+            x: xPos,
+            y: yPos
+       }, tweenSpeed, Phaser.Easing.Linear.None, true);
+
+       return new Promise((resolve, reject) => { tween.onComplete.add(() => resolve()); } );
+    }
+
+    return new Promise((resolve, reject) => resolve() );
   }
 
   isMatch(otherGem){
@@ -72,10 +86,12 @@ class Gem{
 
   hide(){
     this.sprite.visible = false;
+    return this;
   }
 
   show(){
     this.sprite.visible = true;
+    return this;
   }
 
   setDebugInfo(gridPos, neighbours){

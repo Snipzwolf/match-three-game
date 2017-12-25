@@ -59,10 +59,10 @@ class GridElement{
     ]);
   }
 
-  getNewGem(){
+  getNewGem(queuePos){
     if(debug)console.log('getNewGem called', arguments, this);
 
-    this._gem.getNewSprite(this.xPos, this.yPos);
+    return this._gem.getNewSprite(this.xPos, this.yPos, queuePos);
   }
 }
 

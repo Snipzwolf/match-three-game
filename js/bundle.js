@@ -9134,36 +9134,6 @@
 	
 	      if (isPlayerMove && !hadMatch) this._addToPlayerScore(-1);
 	    }
-	
-	    //this function should probably be combined with _onMatches as it's only ever call there
-	
-	  }, {
-	    key: '_onGemMatch',
-	    value: function _onGemMatch(gridEl) {
-	      if (debug) console.log('onGemMatch called', arguments, this);
-	      var promiseArr = [];
-	      var newGem = gridEl.getGem();
-	      newGem.hide();
-	      gridEl.setGem(null);
-	
-	      var nextEl,
-	          lastEl = gridEl;
-	      do {
-	        while ((nextEl = lastEl.neighbours.up) !== null) {
-	          nextEl = this.grid.getElementAt(nextEl);
-	          promiseArr.push(nextEl.swapGems(lastEl));
-	          lastEl = nextEl;
-	        }
-	
-	        if (lastEl.getGem() === null) {
-	          lastEl.setGem(newGem);
-	
-	          lastEl.getNewGem();
-	        }
-	      } while ((lastEl = nextEl) !== null);
-	
-	      return Promise.all(promiseArr);
-	    }
 	  }, {
 	    key: '_addToPlayerScore',
 	    value: function _addToPlayerScore(score) {
@@ -9230,12 +9200,94 @@
 	          }
 	        }
 	      } else {
-	        matches.sort(function (a, b) {
+	        var sortedMatches = matches.sort(function (a, b) {
 	          return a.gridPos - b.gridPos;
-	        }).map(function (match, idx) {
-	          promiseArr.push(_this3._onGemMatch(match));
+	        });
+	
+	        var lastVal = null;
+	        var isVerticalMatch = sortedMatches.every(function (val, idx, arr) {
+	          var diff = 1;
+	
+	          if (lastVal !== null) {
+	            diff = val.gridPos - lastVal;
+	          }
+	
+	          lastVal = val.gridPos;
+	          return diff === 1;
+	        });
+	
+	        var newGems = [],
+	            newGemElements = [];
+	
+	        sortedMatches.map(function (gridEl, idx) {
+	          newGems.push(gridEl.getGem().hide());
+	          gridEl.setGem(null);
+	
+	          var nextEl,
+	              lastEl = gridEl;
+	          //do{
+	          while ((nextEl = lastEl.neighbours.up) !== null) {
+	            nextEl = _this3.grid.getElementAt(nextEl);
+	            if (nextEl.getGem() === null) {
+	              break;
+	            }
+	
+	            promiseArr.push(nextEl.swapGems(lastEl));
+	            lastEl = nextEl;
+	          }
+	
+	          newGemElements.push(lastEl);
+	
+	          /*
+	          if(lastEl.getGem() === null){
+	            lastEl.setGem(newGem);
+	            newGems.push(newGem);
+	             //promiseArr.push(lastEl.getNewGem());
+	          }
+	          */
+	
+	          //}while((lastEl = nextEl) !== null);
+	        });
+	
+	        if (isVerticalMatch) newGemElements.reverse();
+	
+	        newGemElements.map(function (gridEl, idx) {
+	          gridEl.setGem(newGems.pop());
+	          promiseArr.push(gridEl.getNewGem(isVerticalMatch ? idx : 0));
 	        });
 	      }
+	
+	      return Promise.all(promiseArr);
+	    }
+	
+	    //this function should probably be combined with _onMatches as it's only ever call there
+	
+	  }, {
+	    key: '_onGemMatch',
+	    value: function _onGemMatch(gridEl) {
+	      if (debug) console.log('onGemMatch called', arguments, this);
+	      var promiseArr = [];
+	      var newGem = gridEl.getGem();
+	      newGem.hide();
+	      gridEl.setGem(null);
+	
+	      var newGemsPromiseArr = [];
+	      var nextEl,
+	          lastEl = gridEl;
+	      //do{
+	      while ((nextEl = lastEl.neighbours.up) !== null) {
+	        nextEl = this.grid.getElementAt(nextEl);
+	        promiseArr.push(nextEl.swapGems(lastEl));
+	        lastEl = nextEl;
+	      }
+	
+	      if (lastEl.getGem() === null) {
+	        lastEl.setGem(newGem);
+	
+	        promiseArr.push(lastEl.getNewGem());
+	      }
+	
+	      //}while((lastEl = nextEl) !== null);
 	
 	      return Promise.all(promiseArr);
 	    }
@@ -48755,14 +48807,34 @@
 	
 	  _createClass(Gem, [{
 	    key: 'getNewSprite',
-	    value: function getNewSprite(xPos, yPos) {
+	    value: function getNewSprite(xPos, yPos, queuePos) {
 	      this._destroyCurrentSprite();
 	
-	      this._getSprite(xPos, _game2.default.instance.loaded ? gem_size.h * -1 : yPos);
-	      var tween = _game2.default.instance.phaser.add.tween(this.sprite).to({
-	        x: xPos,
-	        y: yPos
-	      }, _game2.default.instance.loaded ? _options2.default.swapSpeed : 0, Phaser.Easing.Linear.None, true);
+	      var startYPos = yPos;
+	      var tweenSpeed = 0;
+	      if (_game2.default.instance.loaded) {
+	        startYPos = -((queuePos + 1) * gem_size.h);
+	        tweenSpeed = _options2.default.swapSpeed;
+	        //tweenSpeed = (Math.abs(startYPos) / gem_size.h) * Options.swapSpeed;
+	      }
+	
+	      this._getSprite(xPos, startYPos);
+	      if (_game2.default.instance.loaded) {
+	        var tween = _game2.default.instance.phaser.add.tween(this.sprite).to({
+	          x: xPos,
+	          y: yPos
+	        }, tweenSpeed, Phaser.Easing.Linear.None, true);
+	
+	        return new Promise(function (resolve, reject) {
+	          tween.onComplete.add(function () {
+	            return resolve();
+	          });
+	        });
+	      }
+	
+	      return new Promise(function (resolve, reject) {
+	        return resolve();
+	      });
 	    }
 	  }, {
 	    key: 'isMatch',
@@ -48808,11 +48880,13 @@
 	    key: 'hide',
 	    value: function hide() {
 	      this.sprite.visible = false;
+	      return this;
 	    }
 	  }, {
 	    key: 'show',
 	    value: function show() {
 	      this.sprite.visible = true;
+	      return this;
 	    }
 	  }, {
 	    key: 'setDebugInfo',
@@ -56298,10 +56372,10 @@
 	    }
 	  }, {
 	    key: 'getNewGem',
-	    value: function getNewGem() {
+	    value: function getNewGem(queuePos) {
 	      if (debug) console.log('getNewGem called', arguments, this);
 	
-	      this._gem.getNewSprite(this.xPos, this.yPos);
+	      return this._gem.getNewSprite(this.xPos, this.yPos, queuePos);
 	    }
 	  }, {
 	    key: 'gridPos',

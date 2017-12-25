@@ -9238,14 +9238,6 @@
 	
 	          newGemElements.push(lastEl);
 	
-	          /*
-	          if(lastEl.getGem() === null){
-	            lastEl.setGem(newGem);
-	            newGems.push(newGem);
-	             //promiseArr.push(lastEl.getNewGem());
-	          }
-	          */
-	
 	          //}while((lastEl = nextEl) !== null);
 	        });
 	
@@ -9256,38 +9248,6 @@
 	          promiseArr.push(gridEl.getNewGem(isVerticalMatch ? idx : 0));
 	        });
 	      }
-	
-	      return Promise.all(promiseArr);
-	    }
-	
-	    //this function should probably be combined with _onMatches as it's only ever call there
-	
-	  }, {
-	    key: '_onGemMatch',
-	    value: function _onGemMatch(gridEl) {
-	      if (debug) console.log('onGemMatch called', arguments, this);
-	      var promiseArr = [];
-	      var newGem = gridEl.getGem();
-	      newGem.hide();
-	      gridEl.setGem(null);
-	
-	      var newGemsPromiseArr = [];
-	      var nextEl,
-	          lastEl = gridEl;
-	      //do{
-	      while ((nextEl = lastEl.neighbours.up) !== null) {
-	        nextEl = this.grid.getElementAt(nextEl);
-	        promiseArr.push(nextEl.swapGems(lastEl));
-	        lastEl = nextEl;
-	      }
-	
-	      if (lastEl.getGem() === null) {
-	        lastEl.setGem(newGem);
-	
-	        promiseArr.push(lastEl.getNewGem());
-	      }
-	
-	      //}while((lastEl = nextEl) !== null);
 	
 	      return Promise.all(promiseArr);
 	    }

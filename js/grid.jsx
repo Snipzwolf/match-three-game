@@ -76,8 +76,10 @@ class Grid{
   }
 
   checkGrid(){
-    var allElements = [].concat(...this.grid);
-    Game.instance.checkForMatch(...allElements);
+    return new Promise((resolve, reject) => {
+      var allElements = [].concat(...this.grid);
+      Game.instance.checkForMatch(...allElements).then(() => resolve());
+    });
   }
 
   getElementAt(gridPos){

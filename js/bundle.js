@@ -9073,13 +9073,15 @@
 	  }, {
 	    key: 'create',
 	    value: function create() {
+	      var _this2 = this;
+	
 	      console.log('rnd state is ', this.game.rnd.state());
 	      //this.game.rnd.state('!rnd,1,0.7426136841531843,0.31959505658596754,0.27615606714971364');
 	
 	      this.grid = new _grid2.default(this.grid_size[0], this.grid_size[1]);
-	      this.grid.checkGrid();
-	
-	      this._loaded = true;
+	      this.grid.checkGrid().then(function () {
+	        _this2._loaded = true;
+	      });
 	    }
 	  }, {
 	    key: 'update',
@@ -9088,51 +9090,62 @@
 	    key: 'checkForMatch',
 	    value: function checkForMatch() {
 	      var _arguments = arguments,
-	          _this2 = this;
+	          _this3 = this;
 	
 	      if (debug) console.log('checkForMatch - called', arguments, this);
 	
 	      var isPlayerMove = arguments.length === 2,
 	          hadMatch = false;
 	
-	      Object.keys(arguments).map(function (key, idx) {
-	        if (debug) console.log('checkForMatch - checking next element', idx, _arguments[key]);
+	      return new Promise(function (resolve, reject) {
+	        for (var key in _arguments) {
+	          if (debug) console.log('checkForMatch - checking next element', idx, _arguments[key]);
 	
-	        var matches = _this2._getScores(_arguments[key]);
+	          var matches = _this3._getScores(_arguments[key]);
 	
-	        if (matches.x.length < 3 && matches.y.length < 3) {
-	          if (debug) console.log('checkForMatch - no matches found', matches.x, matches.y, _arguments, _this2);
-	        } else {
-	          hadMatch = true;
-	          var promiseArr = [];
-	          if (matches.x.length >= 3) {
-	            if (debug) console.log('checkForMatch - x matches found', matches.x, matches.x.map(function (val) {
-	              return val.getGem().name;
-	            }));
-	            promiseArr.push(_this2._onMatches(matches.x));
-	            _this2._addToPlayerScore(matches.x.length);
+	          if (matches.x.length < 3 && matches.y.length < 3) {
+	            if (debug) console.log('checkForMatch - no matches found', matches.x, matches.y, _arguments, _this3);
+	          } else {
+	            hadMatch = true;
+	            var promiseArr = [];
+	            if (matches.x.length >= 3) {
+	              if (debug) console.log('checkForMatch - x matches found', matches.x, matches.x.map(function (val) {
+	                return val.getGem().name;
+	              }));
+	              promiseArr.push(_this3._onMatches(matches.x));
+	              _this3._addToPlayerScore(matches.x.length);
+	            }
+	
+	            if (matches.y.length >= 3) {
+	              if (debug) console.log('checkForMatch - y matches found', matches.y, matches.y.map(function (val) {
+	                return val.getGem().name;
+	              }));
+	              promiseArr.push(_this3._onMatches(matches.y));
+	              _this3._addToPlayerScore(matches.y.length);
+	            }
+	
+	            /*
+	            * if there was matches above check the grid for new matches
+	            * caused by gems moving or new gems added
+	            * TODO change to only check relevant grid elements and not the whole grid
+	            */
+	            Promise.all(_this3._loaded ? promiseArr : []).then(function () {
+	              _this3.grid.checkGrid().then(function () {
+	                return resolve();
+	              });
+	            });
 	          }
 	
-	          if (matches.y.length >= 3) {
-	            if (debug) console.log('checkForMatch - y matches found', matches.y, matches.y.map(function (val) {
-	              return val.getGem().name;
-	            }));
-	            promiseArr.push(_this2._onMatches(matches.y));
-	            _this2._addToPlayerScore(matches.y.length);
-	          }
+	          if (!isPlayerMove && hadMatch) break; //break early as the grid will be checked again due to the matches
+	        };
 	
-	          /*
-	          * if there was matches above check the grid for new matches
-	          * caused by gems moving or new gems added
-	          * TODO change to only check relevant grid elements and not the whole grid
-	          */
-	          Promise.all(_this2._loaded ? promiseArr : []).then(function () {
-	            return _this2.grid.checkGrid();
-	          });
+	        if (!hadMatch) {
+	          if (isPlayerMove) {
+	            _this3._addToPlayerScore(-1);
+	          }
+	          resolve();
 	        }
 	      });
-	
-	      if (isPlayerMove && !hadMatch) this._addToPlayerScore(-1);
 	    }
 	  }, {
 	    key: '_addToPlayerScore',
@@ -9186,7 +9199,7 @@
 	  }, {
 	    key: '_onMatches',
 	    value: function _onMatches(matches) {
-	      var _this3 = this;
+	      var _this4 = this;
 	
 	      var promiseArr = [];
 	      if (!this.loaded) {
@@ -9225,9 +9238,8 @@
 	
 	          var nextEl,
 	              lastEl = gridEl;
-	          //do{
 	          while ((nextEl = lastEl.neighbours.up) !== null) {
-	            nextEl = _this3.grid.getElementAt(nextEl);
+	            nextEl = _this4.grid.getElementAt(nextEl);
 	            if (nextEl.getGem() === null) {
 	              break;
 	            }
@@ -9237,8 +9249,6 @@
 	          }
 	
 	          newGemElements.push(lastEl);
-	
-	          //}while((lastEl = nextEl) !== null);
 	        });
 	
 	        if (isVerticalMatch) newGemElements.reverse();
@@ -56088,10 +56098,16 @@
 	  }, {
 	    key: 'checkGrid',
 	    value: function checkGrid() {
-	      var _ref, _Game$instance;
+	      var _this3 = this;
 	
-	      var allElements = (_ref = []).concat.apply(_ref, _toConsumableArray(this.grid));
-	      (_Game$instance = _game2.default.instance).checkForMatch.apply(_Game$instance, _toConsumableArray(allElements));
+	      return new Promise(function (resolve, reject) {
+	        var _ref, _Game$instance;
+	
+	        var allElements = (_ref = []).concat.apply(_ref, _toConsumableArray(_this3.grid));
+	        (_Game$instance = _game2.default.instance).checkForMatch.apply(_Game$instance, _toConsumableArray(allElements)).then(function () {
+	          return resolve();
+	        });
+	      });
 	    }
 	  }, {
 	    key: 'getElementAt',
@@ -56199,7 +56215,7 @@
 	  }, {
 	    key: '_getBounds',
 	    value: function _getBounds(gridPos) {
-	      var _this3 = this;
+	      var _this4 = this;
 	
 	      var currentX = this._getXIndex(gridPos),
 	          currentY = this._getYIndex(gridPos),
@@ -56210,7 +56226,7 @@
 	          return pos <= 0 ? gridPos : pos;
 	        }(gridPos - this.height),
 	        'right': function (pos) {
-	          return pos > _this3.width * _this3.height ? gridPos : pos;
+	          return pos > _this4.width * _this4.height ? gridPos : pos;
 	        }(gridPos + this.height)
 	      };
 	
@@ -56228,12 +56244,12 @@
 	  }, {
 	    key: '_getYIndex',
 	    value: function _getYIndex(gridPos) {
-	      var _this4 = this;
+	      var _this5 = this;
 	
 	      if (debug) console.log('_getYindex called', arguments, this);
 	
 	      return function (pos) {
-	        return pos || _this4.height;
+	        return pos || _this5.height;
 	      }(gridPos % this.height) - 1;
 	    }
 	  }]);

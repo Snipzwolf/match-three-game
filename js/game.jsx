@@ -56,9 +56,9 @@ class Game {
     //this.game.rnd.state('!rnd,1,0.7426136841531843,0.31959505658596754,0.27615606714971364');
 
     this.grid = new Grid(this.grid_size[0], this.grid_size[1])
-    this.grid.checkGrid();
-
-    this._loaded = true;
+    this.grid.checkGrid().then(() => {
+      this._loaded = true;
+    });
   }
 
   update(){
@@ -71,39 +71,50 @@ class Game {
     var isPlayerMove = arguments.length === 2,
         hadMatch = false;
 
-    Object.keys(arguments).map((key, idx) => {
-      if(debug)console.log('checkForMatch - checking next element', idx, arguments[key]);
+    return new Promise((resolve, reject) => {
+      for(var key in arguments){
+        if(debug)console.log('checkForMatch - checking next element', idx, arguments[key]);
 
-      var matches = this._getScores(arguments[key]);
+        var matches = this._getScores(arguments[key]);
 
-      if((matches.x.length < 3) && (matches.y.length < 3)){
-        if(debug)console.log('checkForMatch - no matches found', matches.x, matches.y, arguments, this);
+        if((matches.x.length < 3) && (matches.y.length < 3)){
+          if(debug)console.log('checkForMatch - no matches found', matches.x, matches.y, arguments, this);
 
-      }else{
-        hadMatch = true;
-        var promiseArr = [];
-        if(matches.x.length >= 3){
-          if(debug)console.log('checkForMatch - x matches found', matches.x, matches.x.map(val => val.getGem().name));
-          promiseArr.push(this._onMatches(matches.x));
-          this._addToPlayerScore(matches.x.length);
+        }else{
+          hadMatch = true;
+          var promiseArr = [];
+          if(matches.x.length >= 3){
+            if(debug)console.log('checkForMatch - x matches found', matches.x, matches.x.map(val => val.getGem().name));
+            promiseArr.push(this._onMatches(matches.x));
+            this._addToPlayerScore(matches.x.length);
+          }
+
+          if(matches.y.length >= 3){
+            if(debug)console.log('checkForMatch - y matches found', matches.y, matches.y.map(val => val.getGem().name));
+            promiseArr.push(this._onMatches(matches.y));
+            this._addToPlayerScore(matches.y.length);
+          }
+
+          /*
+          * if there was matches above check the grid for new matches
+          * caused by gems moving or new gems added
+          * TODO change to only check relevant grid elements and not the whole grid
+          */
+          Promise.all(this._loaded ? promiseArr : []).then(() => {
+            this.grid.checkGrid().then(() => resolve());
+          });
         }
 
-        if(matches.y.length >= 3){
-          if(debug)console.log('checkForMatch - y matches found', matches.y, matches.y.map(val => val.getGem().name));
-          promiseArr.push(this._onMatches(matches.y));
-          this._addToPlayerScore(matches.y.length);
-        }
+        if(!isPlayerMove && hadMatch)break; //break early as the grid will be checked again due to the matches
+      };
 
-        /*
-        * if there was matches above check the grid for new matches
-        * caused by gems moving or new gems added
-        * TODO change to only check relevant grid elements and not the whole grid
-        */
-        Promise.all(this._loaded ? promiseArr : []).then(() => this.grid.checkGrid());
+      if(!hadMatch){
+        if(isPlayerMove){
+          this._addToPlayerScore(-1);
+        }
+        resolve();
       }
     });
-
-    if(isPlayerMove && !hadMatch)this._addToPlayerScore(-1);
   }
 
   _addToPlayerScore(score){
@@ -189,20 +200,17 @@ class Game {
         gridEl.setGem(null);
 
         var nextEl, lastEl = gridEl;
-        //do{
-          while((nextEl = lastEl.neighbours.up) !== null){
-            nextEl = this.grid.getElementAt(nextEl);
-            if(nextEl.getGem() === null){
-              break;
-            }
-
-            promiseArr.push(nextEl.swapGems(lastEl));
-            lastEl = nextEl;
+        while((nextEl = lastEl.neighbours.up) !== null){
+          nextEl = this.grid.getElementAt(nextEl);
+          if(nextEl.getGem() === null){
+            break;
           }
 
-          newGemElements.push(lastEl);
+          promiseArr.push(nextEl.swapGems(lastEl));
+          lastEl = nextEl;
+        }
 
-        //}while((lastEl = nextEl) !== null);
+        newGemElements.push(lastEl);
       });
 
       if(isVerticalMatch)newGemElements.reverse();

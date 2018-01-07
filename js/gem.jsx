@@ -10,7 +10,7 @@ const gem_prefixs = [
 const gem_size = {
   w: 55,
   h: 82,
-  m: 5
+  m: 5 //TODO kill with fire as it unused
 };
 
 class Gem{

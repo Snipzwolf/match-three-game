@@ -9028,13 +9028,12 @@
 	    this._loaded = false;
 	
 	    var windowWidth = $(window).width(),
-	        windowGemWidth = Math.floor((windowWidth - 450) / (_gem2.default.width + _gem2.default.margin * 2));
+	        windowHeight = $(window).height(),
+	        windowGemWidth = Math.floor((windowWidth - 450) / _gem2.default.width),
+	        windowGemHeight = Math.floor((windowHeight - 100) / _gem2.default.height);
 	
-	    if (windowGemWidth > 5) {
-	      this.grid_size = [windowGemWidth, 8];
-	    } else {
-	      this.grid_size = [8, 8];
-	    }
+	    console.log(windowWidth, windowHeight, windowGemWidth, windowGemHeight, _gem2.default.height + _gem2.default.margin * 2);
+	    this.grid_size = [windowGemWidth > 5 ? windowGemWidth : 8, windowGemHeight >= 5 ? windowGemHeight : 8];
 	
 	    //this.grid_size = [15, 8];
 	    //this.grid_size = [3, 3];
@@ -48725,7 +48724,7 @@
 	var gem_size = {
 	  w: 55,
 	  h: 82,
-	  m: 5
+	  m: 5 //TODO kill with fire as it unused
 	};
 	
 	var Gem = function () {

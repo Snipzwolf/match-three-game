@@ -16,13 +16,15 @@ class Game {
     this._loaded = false;
 
     var windowWidth = $(window).width(),
-        windowGemWidth = Math.floor((windowWidth - 450) / (Gem.width + Gem.margin * 2));
+        windowHeight = $(window).height(),
+        windowGemWidth = Math.floor((windowWidth - 450) / Gem.width),
+        windowGemHeight = Math.floor((windowHeight - 100) / Gem.height);
 
-    if(windowGemWidth > 5){
-      this.grid_size = [windowGemWidth, 8];
-    }else{
-      this.grid_size = [8, 8];
-    }
+    console.log(windowWidth, windowHeight, windowGemWidth, windowGemHeight, Gem.height + (Gem.margin * 2))
+    this.grid_size = [
+      windowGemWidth > 5 ? windowGemWidth : 8,
+      windowGemHeight >= 5 ? windowGemHeight : 8
+    ];
 
     //this.grid_size = [15, 8];
     //this.grid_size = [3, 3];
